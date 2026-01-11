@@ -734,6 +734,13 @@ if (skyboxSelect) {
   skyboxSelect.addEventListener("change", () => {
     configManager.set("currentSkybox", skyboxSelect.value);
   });
+
+  if (currentPlatform === "linux") {
+    const disclaimer = document.getElementById("skybox-disclaimer");
+    if (disclaimer) {
+      disclaimer.style.display = "block";
+    }
+  }
 }
 
 setupCustomDropdowns();

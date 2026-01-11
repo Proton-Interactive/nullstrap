@@ -225,10 +225,67 @@ async function hideProgress() {
   await emit("progress-close");
 }
 
+async function launchSober() {
+  await updateProgress("Checking", "Checking for Flatpak...", 0);
+  try {
+    const flatpakCheck = await Command.create("flatpak", ["--version"]);
+    const output = await flatpakCheck.execute();
+    if (output.code !== 0) throw new Error("Flatpak check failed");
+  } catch (e) {
+    await updateProgress("Error", "Flatpak is not installed.", 0);
+    setTimeout(hideProgress, 3000);
+    return;
+  }
+
+  await updateProgress("Checking", "Checking Sober...", 20);
+  try {
+    const infoCmd = await Command.create("flatpak", [
+      "info",
+      "org.vinegarhq.Sober",
+    ]);
+    const infoOut = await infoCmd.execute();
+
+    if (infoOut.code !== 0) {
+      await updateProgress(
+        "Installing",
+        "Installing Sober (this may take a while)...",
+        30,
+      );
+      const installCmd = await Command.create("flatpak", [
+        "install",
+        "-y",
+        "flathub",
+        "org.vinegarhq.Sober",
+      ]);
+      const installOut = await installCmd.execute();
+      if (installOut.code !== 0) {
+        throw new Error(`Install failed with code ${installOut.code}`);
+      }
+    }
+  } catch (e) {
+    console.error(e);
+    await updateProgress("Error", "Failed to install Sober.", 0);
+    setTimeout(hideProgress, 3000);
+    return;
+  }
+
+  await updateProgress("Launching", "Starting Sober...", 100);
+  const runCmd = await Command.create("flatpak", [
+    "run",
+    "org.vinegarhq.Sober",
+  ]);
+  await runCmd.spawn();
+  setTimeout(hideProgress, 2000);
+}
+
 // launch roblox
 async function launchRoblox() {
+  if (platform() === "linux") {
+    return launchSober();
+  }
+
   if (platform() !== "windows") {
-    alert("This feature is currently only available on Windows.");
+    alert("This feature is currently only available on Windows and Linux.");
     return;
   }
 
