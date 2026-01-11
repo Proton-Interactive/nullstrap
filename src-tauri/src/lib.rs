@@ -13,7 +13,7 @@ fn greet(name: &str) -> String {
 
 // apply square corners
 #[tauri::command]
-fn apply_square_corners(window: tauri::WebviewWindow) {
+fn apply_square_corners(_window: tauri::WebviewWindow) {
     #[cfg(target_os = "windows")]
     {
         use raw_window_handle::{HasWindowHandle, RawWindowHandle};
@@ -23,7 +23,7 @@ fn apply_square_corners(window: tauri::WebviewWindow) {
             DWM_WINDOW_CORNER_PREFERENCE,
         };
 
-        if let Ok(handle) = window.window_handle() {
+        if let Ok(handle) = _window.window_handle() {
             if let RawWindowHandle::Win32(handle) = handle.as_raw() {
                 let hwnd = handle.hwnd.get();
                 unsafe {
@@ -41,7 +41,7 @@ fn apply_square_corners(window: tauri::WebviewWindow) {
 
 // save fast flags
 #[tauri::command]
-fn save_fast_flags(flags_json: String) -> Result<String, String> {
+fn save_fast_flags(_flags_json: String) -> Result<String, String> {
     #[cfg(target_os = "windows")]
     {
         use std::fs;
@@ -50,10 +50,18 @@ fn save_fast_flags(flags_json: String) -> Result<String, String> {
         let mut potential_paths = Vec::new();
 
         if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
-            potential_paths.push(PathBuf::from(local_app_data).join("Roblox").join("Versions"));
+            potential_paths.push(
+                PathBuf::from(local_app_data)
+                    .join("Roblox")
+                    .join("Versions"),
+            );
         }
         if let Ok(program_files_x86) = std::env::var("ProgramFiles(x86)") {
-            potential_paths.push(PathBuf::from(program_files_x86).join("Roblox").join("Versions"));
+            potential_paths.push(
+                PathBuf::from(program_files_x86)
+                    .join("Roblox")
+                    .join("Versions"),
+            );
         }
         if let Ok(program_files) = std::env::var("ProgramFiles") {
             potential_paths.push(PathBuf::from(program_files).join("Roblox").join("Versions"));
@@ -81,7 +89,7 @@ fn save_fast_flags(flags_json: String) -> Result<String, String> {
                             }
 
                             let file_path = client_settings_dir.join("ClientAppSettings.json");
-                            if let Ok(_) = fs::write(file_path, &flags_json) {
+                            if let Ok(_) = fs::write(file_path, &_flags_json) {
                                 saved_any = true;
                             }
                         }
@@ -93,7 +101,10 @@ fn save_fast_flags(flags_json: String) -> Result<String, String> {
         if saved_any {
             Ok("Successfully saved Fast Flags to Roblox installation.".to_string())
         } else {
-            Err(format!("Could not find valid Roblox installation folder. Searched: {:?}", searched_locations))
+            Err(format!(
+                "Could not find valid Roblox installation folder. Searched: {:?}",
+                searched_locations
+            ))
         }
     }
 
@@ -107,9 +118,7 @@ pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let show_i = MenuItemBuilder::with_id("show", "Show Window").build(app)?;
     let quit_i = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
 
-    let menu = MenuBuilder::new(app)
-        .items(&[&show_i, &quit_i])
-        .build()?;
+    let menu = MenuBuilder::new(app).items(&[&show_i, &quit_i]).build()?;
 
     TrayIconBuilder::new()
         .icon(app.default_window_icon().unwrap().clone()) // or load your own .ico/.png
