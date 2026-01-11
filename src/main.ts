@@ -4,6 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { Snowfall } from "./snowfall";
 import { ConfigManager, FastFlags, SoberSettings } from "./config";
 import { openPath } from "@tauri-apps/plugin-opener";
+import { setupCustomDropdowns } from "./dropdown";
 import {
   appLocalDataDir,
   join,
@@ -733,6 +734,18 @@ if (skyboxSelect) {
     configManager.set("currentSkybox", skyboxSelect.value);
   });
 }
+
+setupCustomDropdowns();
+
+// Prevent scroll wheel from changing number input values
+document.addEventListener("wheel", () => {
+  if (
+    document.activeElement instanceof HTMLInputElement &&
+    document.activeElement.type === "number"
+  ) {
+    document.activeElement.blur();
+  }
+});
 
 async function applySkyboxToDisk() {
   if (currentPlatform === "linux") return; // Not supported on Sober
