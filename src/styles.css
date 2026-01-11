@@ -1,0 +1,331 @@
+/* base styles */
+html {
+    background: transparent;
+}
+
+body {
+    margin: 0;
+    background-color: #1c1c1b;
+    font-family: sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    opacity: 0;
+    user-select: none;
+}
+
+/* animations */
+body.animate-entry {
+    animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* titlebar */
+.titlebar {
+    height: 30px;
+    background: #1c1c1b;
+    user-select: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    border-bottom: 1px solid slateblue;
+}
+
+.title-header {
+    margin-left: 10px;
+    font-size: 14px;
+    color: slateblue;
+}
+
+.controls {
+    display: flex;
+}
+
+.titlebar button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+    color: slateblue;
+}
+
+.titlebar button:hover {
+    background: #333332;
+}
+
+/* main layout */
+.main-container {
+    display: flex;
+    height: 100vh;
+    padding-top: 30px;
+    padding-bottom: 40px;
+    box-sizing: border-box;
+}
+
+/* sidebar */
+.sidebar {
+    width: 180px;
+    background-color: #202020;
+    border-right: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px;
+}
+
+.sidebar button {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    padding: 10px 15px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 13px;
+    transition:
+        background 0.2s,
+        color 0.2s;
+}
+
+.sidebar button:hover {
+    background-color: #2a2a2a;
+    color: #fff;
+}
+
+.sidebar button.active {
+    background-color: #2a2a2a;
+    color: slateblue;
+    border-left: 2px solid slateblue;
+}
+
+.sidebar button[data-tab="settings"] {
+    margin-top: auto;
+}
+
+/* content area */
+.app-content {
+    flex: 1;
+    padding: 15px 20px;
+    overflow-y: auto;
+    color: #e0e0e0;
+    scrollbar-width: none;
+}
+
+.app-content::-webkit-scrollbar {
+    display: none;
+}
+
+.tab-content h3 {
+    margin-top: 0;
+}
+
+/* footer */
+.footer {
+    height: 40px;
+    background: #1c1c1b;
+    user-select: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    border-top: 1px solid slateblue;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.footer-status {
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+.footer-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-footer {
+    background-color: #252525;
+    color: white;
+    border: 1px solid #333;
+    padding: 0 15px;
+    font-size: 12px;
+    cursor: pointer;
+    transition:
+        background-color 0.2s,
+        border-color 0.2s;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+}
+
+.btn-footer:hover {
+    background-color: #2f2f2f;
+    border-color: #444;
+}
+
+.btn-primary {
+    background-color: slateblue;
+    border-color: slateblue;
+}
+
+.btn-primary:hover {
+    background-color: darkslateblue;
+    border-color: darkslateblue;
+}
+
+.tab-content {
+    margin-bottom: 100px;
+}
+
+/* keyframes */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Checkbox Styles */
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: #252525;
+    margin: 0;
+    color: currentColor;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #333;
+    display: grid;
+    place-content: center;
+    cursor: pointer;
+    border-radius: 0;
+}
+
+input[type="checkbox"]::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em white;
+    transform-origin: center;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+input[type="checkbox"]:checked {
+    background-color: slateblue;
+    border-color: slateblue;
+}
+
+input[type="checkbox"]:checked::before {
+    transform: scale(1);
+}
+
+/* Input Styles */
+input[type="number"] {
+    background-color: #252525;
+    color: white;
+    border: 1px solid #333;
+    padding: 5px;
+    font-size: 13px;
+    border-radius: 0;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+input[type="number"]:focus {
+    border-color: slateblue;
+}
+
+/* Modal Styles */
+#ff-editor-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Notification Styles */
+.notification {
+    background-color: #252525;
+    border: 1px solid slateblue;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    font-size: 14px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation:
+        slideIn 0.3s forwards,
+        fadeOut 0.3s 2.7s forwards;
+    pointer-events: auto;
+    min-width: 200px;
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+/* Settings Alignment Helpers */
+.setting-row {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    min-height: 24px;
+}
+
+.setting-row input[type="checkbox"] {
+    margin: 0;
+}
+
+.setting-row span {
+    margin-left: 10px;
+    user-select: none;
+}
+
+.input-group {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input-group label {
+    font-size: 0.9em;
+    color: #ccc;
+}

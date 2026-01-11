@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/x-icon" href="/src/assets/favicon.ico" />
+        <link rel="stylesheet" href="/src/styles.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tauri App</title>
+        <script type="module" src="/src/main.ts" defer></script>
+    </head>
+
+    <body>
+        <div class="titlebar" data-tauri-drag-region>
+            <div id="title-header" class="title-header">
+                nullstrap | v*.*.*
+            </div>
+            <div class="controls">
+                <button id="titlebar-minimize" title="minimize">
+                    <!-- https://api.iconify.design/mdi:window-minimize.svg -->
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                    >
+                        <path fill="currentColor" d="M19 13H5v-2h14z" />
+                    </svg>
+                </button>
+                <button id="titlebar-maximize" title="maximize">
+                    <!-- https://api.iconify.design/mdi:window-maximize.svg -->
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            fill="currentColor"
+                            d="M4 4h16v16H4zm2 4v10h12V8z"
+                        />
+                    </svg>
+                </button>
+                <button id="titlebar-close" title="close">
+                    <!-- https://api.iconify.design/mdi:close.svg -->
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            fill="currentColor"
+                            d="M13.46 12L19 17.54V19h-1.46L12 13.46L6.46 19H5v-1.46L10.54 12L5 6.46V5h1.46L12 10.54L17.54 5H19v1.46z"
+                        />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="main-container">
+            <div class="sidebar">
+                <button class="tab-btn" data-tab="general">General</button>
+                <button class="tab-btn" data-tab="mods">Mods</button>
+                <button class="tab-btn" data-tab="fast-flags">Fast Flags</button>
+                <button class="tab-btn" data-tab="appearance">Appearance</button>
+                <button class="tab-btn" data-tab="behavior">Behavior</button>
+                <button class="tab-btn" data-tab="integrations">Integrations<button>
+                <button class="tab-btn" data-tab="settings">Settings</button>
+                <button class="tab-btn" data-tab="about">About</button>
+            </div>
+            <div class="app-content">
+                <div
+                    id="tab-general"
+                    class="tab-content"
+                    style="display: none;"
+                >
+                    <h3>General Settings</h3>
+                    <h4>Roblox</h4>
+                    <div class="setting-row" style="margin-bottom: 20px;">
+                        <input type="checkbox" id="fps-unlock-toggle">
+                        <span>Unlock Framerate</span>
+                    </div>
+
+                    <div id="sober-section" style="display: none;">
+                        <h4>Sober (Linux)</h4>
+                        <div class="setting-row">
+                            <input type="checkbox" id="sober-allow_gamepad_permission">
+                            <span>Allow Gamepad Permission</span>
+                        </div>
+                        <div class="setting-row">
+                            <input type="checkbox" id="sober-bring_back_oof">
+                            <span>Bring Back Oof Sound</span>
+                        </div>
+                        <div class="setting-row">
+                            <input type="checkbox" id="sober-close_on_leave">
+                            <span>Close on Leave</span>
+                        </div>
+                        <div class="setting-row">
+                            <input type="checkbox" id="sober-discord_rpc_enabled">
+                            <span>Discord RPC Enabled</span>
+                        </div>
+                        <div class="setting-row">
+                            <input type="checkbox" id="sober-discord_rpc_show_join_button">
+                            <span>Show Discord Join Button</span>
+                        </div>
+                        <div class="setting-row">
+                            <input type="checkbox" id="sober-enable_gamemode">
+                            <span>Enable Gamemode</span>
+                        </div>
+                        <div class="setting-row">
+                            <input type="checkbox" id="sober-enable_hidpi">
+                            <span>Enable HiDPI</span>
+                        </div>
+                        <div class="setting-row">
+                            <input type="checkbox" id="sober-server_location_indicator_enabled">
+                            <span>Server Location Indicator</span>
+                        </div>
+                        <div class="setting-row">
+                            <input type="checkbox" id="sober-use_console_experience">
+                            <span>Use Console Experience</span>
+                        </div>
+                        <div class="setting-row">
+                            <input type="checkbox" id="sober-use_libsecret">
+                            <span>Use Libsecret</span>
+                        </div>
+                        <div class="setting-row">
+                            <input type="checkbox" id="sober-use_opengl">
+                            <span>Use OpenGL</span>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Touch Mode</label>
+                            <select id="sober-touch_mode" style="width: 100%; padding: 5px; background: #252525; color: white; border: 1px solid #333; outline: none;">
+                                <option value="off">Off</option>
+                                <option value="on">On</option>
+                                <option value="fake-off">Fake Off</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Graphics Optimization Mode</label>
+                            <select id="sober-graphics_optimization_mode" style="width: 100%; padding: 5px; background: #252525; color: white; border: 1px solid #333; outline: none;">
+                                <option value="quality">Quality</option>
+                                <option value="balanced">Balanced</option>
+                                <option value="performance">Performance</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h4>Files</h4>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="btn-open-install-folder" class="btn-footer">Open Installation Folder</button>
+                        <button id="btn-clear-cache" class="btn-footer">Clear Roblox Cache</button>
+                    </div>
+                </div>
+                <div
+                    id="tab-mods"
+                    class="tab-content"
+                    style="display: none;"
+                >
+                    <h3>Mods</h3>
+                    <h4>Skybox Manager</h4>
+                    <p style="font-size: 0.9em; color: #aaa; margin-bottom: 10px;">Select a skybox to apply to Roblox.</p>
+                    <select id="skybox-select" style="width: 100%; padding: 8px; background: #252525; color: white; border: 1px solid #333; border-radius: 4px; outline: none; margin-bottom: 10px;">
+                        <option value="Default">Default</option>
+                        <option value="Beautfil">Beautfil</option>
+                        <option value="Blue">Blue</option>
+                        <option value="Chill gray">Chill gray</option>
+                        <option value="ChromaKey">ChromaKey</option>
+                        <option value="Light Blue">Light Blue</option>
+                        <option value="NeonSky">NeonSky</option>
+                        <option value="NeonSky2">NeonSky2</option>
+                        <option value="Pandora">Pandora</option>
+                        <option value="PlanetCyan">PlanetCyan</option>
+                        <option value="PurpleVoid">PurpleVoid</option>
+                        <option value="RemRam">RemRam</option>
+                        <option value="Yumeko">Yumeko</option>
+                    </select>
+
+                </div>
+                <div
+                    id="tab-fast-flags"
+                    class="tab-content"
+                    style="display: none;"
+                >
+                    <h3>Fast Flags</h3>
+                    <button id="btn-open-ff-editor" class="btn-footer" style="margin-bottom: 15px; width: auto;">Open JSON Editor</button>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding-right: 10px;">
+                        <div>
+                            <h4>Rendering & Graphics</h4>
+
+                            <!-- DFFlagTextureQualityOverrideEnabled -->
+                            <div class="setting-row">
+                                <input type="checkbox" id="ff-DFFlagTextureQualityOverrideEnabled">
+                                <span>Texture Quality Override</span>
+                            </div>
+
+                            <!-- DFIntTextureQualityOverride -->
+                            <div class="input-group">
+                                <label>Texture Quality Level</label>
+                                <input type="number" id="ff-DFIntTextureQualityOverride" style="width: 100%; border-radius: 0;">
+                            </div>
+
+                            <!-- FIntDebugForceMSAASamples -->
+                            <div class="input-group">
+                                <label>MSAA Samples</label>
+                                <input type="number" id="ff-FIntDebugForceMSAASamples" style="width: 100%; border-radius: 0;">
+                            </div>
+
+                            <!-- DFFlagDisableDPIScale -->
+                            <div class="setting-row">
+                                <input type="checkbox" id="ff-DFFlagDisableDPIScale">
+                                <span>Disable DPI Scale</span>
+                            </div>
+
+                            <!-- FFlagHandleAltEnterFullscreenManually -->
+                            <div class="setting-row">
+                                <input type="checkbox" id="ff-FFlagHandleAltEnterFullscreenManually">
+                                <span>Manual Alt+Enter</span>
+                            </div>
+
+                            <h4>Graphics API</h4>
+                            <!-- FFlagDebugGraphicsPreferD3D11 -->
+                            <div class="setting-row">
+                                <input type="checkbox" id="ff-FFlagDebugGraphicsPreferD3D11">
+                                <span>Prefer D3D11</span>
+                            </div>
+                            <!-- FFlagDebugGraphicsPreferVulkan -->
+                            <div class="setting-row">
+                                <input type="checkbox" id="ff-FFlagDebugGraphicsPreferVulkan">
+                                <span>Prefer Vulkan</span>
+                            </div>
+                            <!-- FFlagDebugGraphicsPreferOpenGL -->
+                            <div class="setting-row">
+                                <input type="checkbox" id="ff-FFlagDebugGraphicsPreferOpenGL">
+                                <span>Prefer OpenGL</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4>CSG & LOD</h4>
+                             <!-- DFIntCSGLevelOfDetailSwitchingDistance -->
+                            <div class="input-group">
+                                <label>CSG LOD Dist</label>
+                                <input type="number" id="ff-DFIntCSGLevelOfDetailSwitchingDistance" style="width: 100%; border-radius: 0;">
+                            </div>
+                            <!-- DFIntCSGLevelOfDetailSwitchingDistanceL12 -->
+                            <div class="input-group">
+                                <label>CSG LOD Dist L12</label>
+                                <input type="number" id="ff-DFIntCSGLevelOfDetailSwitchingDistanceL12" style="width: 100%; border-radius: 0;">
+                            </div>
+                            <!-- DFIntCSGLevelOfDetailSwitchingDistanceL23 -->
+                            <div class="input-group">
+                                <label>CSG LOD Dist L23</label>
+                                <input type="number" id="ff-DFIntCSGLevelOfDetailSwitchingDistanceL23" style="width: 100%; border-radius: 0;">
+                            </div>
+                            <!-- DFIntCSGLevelOfDetailSwitchingDistanceL34 -->
+                            <div class="input-group">
+                                <label>CSG LOD Dist L34</label>
+                                <input type="number" id="ff-DFIntCSGLevelOfDetailSwitchingDistanceL34" style="width: 100%; border-radius: 0;">
+                            </div>
+
+                            <h4>Environment & Debug</h4>
+                            <!-- FFlagDebugSkyGray -->
+                            <div class="setting-row">
+                                <input type="checkbox" id="ff-FFlagDebugSkyGray">
+                                <span>Debug Sky Gray</span>
+                            </div>
+                             <!-- DFFlagDebugPauseVoxelizer -->
+                            <div class="setting-row">
+                                <input type="checkbox" id="ff-DFFlagDebugPauseVoxelizer">
+                                <span>Pause Voxelizer</span>
+                            </div>
+                             <!-- DFIntDebugFRMQualityLevelOverride -->
+                            <div class="input-group">
+                                <label>FRM Quality Override</label>
+                                <input type="number" id="ff-DFIntDebugFRMQualityLevelOverride" style="width: 100%; border-radius: 0;">
+                            </div>
+                            <!-- FIntFRMMaxGrassDistance -->
+                            <div class="input-group">
+                                <label>Max Grass Dist</label>
+                                <input type="number" id="ff-FIntFRMMaxGrassDistance" style="width: 100%; border-radius: 0;">
+                            </div>
+                             <!-- FIntFRMMinGrassDistance -->
+                            <div class="input-group">
+                                <label>Min Grass Dist</label>
+                                <input type="number" id="ff-FIntFRMMinGrassDistance" style="width: 100%; border-radius: 0;">
+                            </div>
+                            <!-- FIntGrassMovementReducedMotionFactor -->
+                            <div class="input-group">
+                                <label>Grass Motion Factor</label>
+                                <input type="number" id="ff-FIntGrassMovementReducedMotionFactor" style="width: 100%; border-radius: 0;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    id="tab-mods"
+                    class="tab-content"
+                    style="display: none"
+                >
+                    <h3>Mods</h3>
+                </div>
+                <div
+                    id="tab-appearance"
+                    class="tab-content"
+                    style="display: none"
+                >
+                    <h3>Appearance</h3>
+                    <div class="setting-row">
+                        <input type="checkbox" id="snowfall-toggle">
+                        <span>Enable Snowfall</span>
+                    </div>
+                    <div class="setting-row">
+                        <input type="checkbox" id="opening-animation-toggle">
+                        <span>Enable Opening Animation</span>
+                    </div>
+                </div>
+                <div
+                    id="tab-behavior"
+                    class="tab-content"
+                    style="display: none"
+                >
+                    <h3>Behavior</h3>
+                    <p>Behavior settings go here.</p>
+                </div>
+                <div
+                    id="tab-integrations"
+                    class="tab-content"
+                    style="display: none"
+                >
+                    <h3>Integrations</h3>
+                    <p>Integration settings go here.</p>
+                </div>
+                <div
+                    id="tab-settings"
+                    class="tab-content"
+                    style="display: none"
+                >
+                    <h3>Settings</h3>
+                    <p>Settings go here.</p>
+                </div>
+                <div
+                    id="tab-about"
+                    class="tab-content"
+                    style="display: none"
+                >
+                    <h3>About</h3>
+                    <h4>- Coders -</h4>
+                    <ul>
+                        <li href="https://github.com/wakefulblock262">wakefulblock262</li>
+                    </ul>
+                    <h4>- Inspirations and Features -</h4>
+                    <ul>
+                        <li>Voidstrap and Plexity</li>
+                        <li>Bloxstrap</li>
+                        <li>Froststrap</li>
+                        <li>Fishstrap</li>
+                    </ul>
+                    <h4>- Licenses -</h4>
+                </div>
+            </div>
+        </div>
+
+        <div id="ff-editor-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000; display: none; justify-content: center; align-items: center;">
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8);" id="ff-editor-overlay"></div>
+            <div style="position: relative; background: #1c1c1b; padding: 20px; width: 80%; max-width: 600px; border: 1px solid slateblue; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: flex; flex-direction: column;">
+                <h3 style="margin-top: 0; color: #aaa;">Fast Flag JSON Editor</h3>
+                <p style="color: #aaa; font-size: 0.9em; margin-top: 0;">Edit configuration directly. Only valid JSON is accepted.</p>
+                <textarea id="ff-json-editor" spellcheck="false" style="width: 100%; height: 300px; background: #111; color: #eee; border: 1px solid #333; font-family: monospace; padding: 10px; box-sizing: border-box; resize: none; margin-bottom: 15px; outline: none;"></textarea>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button id="btn-close-ff-editor" class="btn-footer">Cancel</button>
+                    <button id="btn-save-ff-editor" class="btn-footer btn-primary">Save & Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <footer id="bottom-bar" class="footer">
+            <div class="footer-status"></div>
+            <div class="footer-controls">
+                <button class="btn-footer" id="btn-close">Close</button>
+                <button class="btn-footer" id="btn-save">Save</button>
+                <button class="btn-footer btn-primary" id="btn-launch">
+                    Save and Launch
+                </button>
+            </div>
+        </footer>
+
+        <div id="notification-container" style="position: fixed; bottom: 60px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
+    </body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Progress</title>
+        <style>
+            html {
+                background: transparent;
+            }
+
+            body {
+                background-color: #1c1c1b;
+                color: white;
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                margin: 0;
+                user-select: none;
+                cursor: default;
+                overflow: hidden;
+                border: 1px solid slateblue;
+                box-sizing: border-box;
+            }
+
+            .titlebar {
+                height: 30px;
+                background: #1c1c1b;
+                user-select: none;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                border-bottom: 1px solid #333;
+            }
+
+            .titlebar button {
+                display: inline-flex;
+                justify-content: center;
+                align-items: center;
+                width: 30px;
+                height: 30px;
+                padding: 0;
+                margin: 0;
+                border: none;
+                background-color: transparent;
+                color: slateblue;
+                cursor: pointer;
+            }
+
+            .titlebar button:hover {
+                background: #333332;
+            }
+
+            .content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+            }
+
+            h3 {
+                margin: 0 0 15px 0;
+                font-size: 1.1rem;
+                font-weight: 500;
+            }
+
+            .progress-bar-container {
+                width: 100%;
+                height: 6px;
+                background: #333;
+                border-radius: 0;
+                margin-bottom: 10px;
+                overflow: hidden;
+            }
+
+            .progress-bar {
+                height: 100%;
+                background: slateblue;
+                width: 0%;
+                transition: width 0.2s ease;
+            }
+
+            #progress-status {
+                font-size: 0.85rem;
+                color: #aaa;
+                margin: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 90%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="titlebar" data-tauri-drag-region>
+            <div class="controls">
+                <button id="minimize" title="minimize">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                    >
+                        <path fill="currentColor" d="M19 13H5v-2h14z" />
+                    </svg>
+                </button>
+                <button id="close" title="close">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            fill="currentColor"
+                            d="M13.46 12L19 17.54V19h-1.46L12 13.46L6.46 19H5v-1.46L10.54 12L5 6.46V5h1.46L12 10.54L17.54 5H19v1.46z"
+                        />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="content">
+            <h3 id="progress-title">Starting...</h3>
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <p id="progress-status">Please wait...</p>
+        </div>
+
+        <script type="module" src="/src/progress.ts"></script>
+    </body>
+</html>

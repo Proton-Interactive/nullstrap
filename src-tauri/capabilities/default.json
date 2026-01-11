@@ -1,0 +1,283 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": ["main", "splashscreen", "progress"],
+  "permissions": [
+    "core:default",
+    "core:app:default",
+    "core:window:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "core:window:allow-set-size",
+    "core:window:allow-is-maximized",
+    "core:webview:default",
+    "core:webview:allow-create-webview-window",
+    "opener:default",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA"
+        },
+        {
+          "path": "$APPLOCALDATA/**"
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-open",
+      "allow": [
+        {
+          "href": "^.*$"
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "cmd",
+          "cmd": "cmd",
+          "args": true
+        },
+        {
+          "name": "flatpak",
+          "cmd": "flatpak",
+          "args": true
+        },
+        {
+          "name": "open",
+          "cmd": "open",
+          "args": true
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "cmd",
+          "cmd": "cmd",
+          "args": true
+        },
+        {
+          "name": "flatpak",
+          "cmd": "flatpak",
+          "args": true
+        },
+        {
+          "name": "open",
+          "cmd": "open",
+          "args": true
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/rblx-versions"
+        },
+        {
+          "path": "$APPLOCALDATA/rblx-versions/**"
+        },
+        {
+          "path": "$APPLOCALDATA/scripts"
+        },
+        {
+          "path": "$APPLOCALDATA/scripts/**"
+        },
+        {
+          "path": "$APPLOCALDATA/logs"
+        },
+        {
+          "path": "$APPLOCALDATA/logs/**"
+        },
+        {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/config/sober"
+        },
+        {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/config/sober/**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/rblx-versions"
+        },
+        {
+          "path": "$APPLOCALDATA/rblx-versions/**"
+        },
+        {
+          "path": "$APPLOCALDATA/scripts"
+        },
+        {
+          "path": "$APPLOCALDATA/scripts/**"
+        },
+        {
+          "path": "$APPLOCALDATA/logs"
+        },
+        {
+          "path": "$APPLOCALDATA/logs/**"
+        },
+        {
+          "path": "$TEMP/Roblox"
+        },
+        {
+          "path": "$TEMP/Roblox/**"
+        },
+        {
+          "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13.xml"
+        },
+        {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/config/sober/config.json"
+        },
+        {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/data/sober/appData/GlobalBasicSettings_13.xml"
+        },
+        {
+          "path": "$HOME/Library/Roblox/GlobalBasicSettings_13.xml"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [
+        {
+          "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13.xml"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/rblx-versions/**"
+        },
+        {
+          "path": "$APPLOCALDATA/scripts/**"
+        },
+        {
+          "path": "$APPLOCALDATA/logs/**"
+        },
+        {
+          "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13.xml"
+        },
+        {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/config/sober/config.json"
+        },
+        {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/data/sober/appData/GlobalBasicSettings_13.xml"
+        },
+        {
+          "path": "$HOME/Library/Roblox/GlobalBasicSettings_13.xml"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/rblx-versions/**"
+        },
+        {
+          "path": "$APPLOCALDATA/scripts/**"
+        },
+        {
+          "path": "$APPLOCALDATA/logs/**"
+        },
+        {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/config/sober/config.json"
+        },
+        {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/data/sober/appData/GlobalBasicSettings_13.xml"
+        },
+        {
+          "path": "$HOME/Library/Roblox/GlobalBasicSettings_13.xml"
+        },
+        {
+          "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13.xml"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-create",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/rblx-versions/**"
+        },
+        {
+          "path": "$APPLOCALDATA/scripts/**"
+        },
+        {
+          "path": "$APPLOCALDATA/logs/**"
+        },
+        {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/config/sober/config.json"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/rblx-versions"
+        },
+        {
+          "path": "$APPLOCALDATA/rblx-versions/**"
+        },
+        {
+          "path": "$TEMP/Roblox"
+        },
+        {
+          "path": "$TEMP/Roblox/**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-remove",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/rblx-versions/**"
+        },
+        {
+          "path": "$TEMP/Roblox"
+        },
+        {
+          "path": "$TEMP/Roblox/**"
+        }
+      ]
+    },
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "https://clientsettings.roblox.com/v2/client-version/WindowsPlayer"
+        },
+        {
+          "url": "https://clientsettings.roblox.com/v2/client-version/MacPlayer"
+        },
+        {
+          "url": "https://clientsettings.roblox.com/v2/client-version/WindowsPlayer/channel/LIVE"
+        },
+        {
+          "url": "https://rdd.whatexpsare.online/**"
+        },
+        {
+          "url": "https://setup.rbxcdn.com/**"
+        },
+        {
+          "url": "https://setup-aws.rbxcdn.com/**"
+        }
+      ]
+    }
+  ]
+}
