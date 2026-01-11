@@ -411,8 +411,32 @@ ffKeys.forEach((key) => {
     checkbox.checked = value;
     checkbox.addEventListener("change", (e) => {
       const flags = configManager.get("fastFlags");
+      const isChecked = (e.target as HTMLInputElement).checked;
       // @ts-ignore
-      flags[key] = (e.target as HTMLInputElement).checked;
+      flags[key] = isChecked;
+
+      // Exclusive graphics flags logic
+      if (isChecked) {
+        const graphicsFlags = [
+          "FFlagDebugGraphicsPreferD3D11",
+          "FFlagDebugGraphicsPreferVulkan",
+          "FFlagDebugGraphicsPreferOpenGL",
+        ];
+
+        if (graphicsFlags.includes(key as string)) {
+          graphicsFlags.forEach((gKey) => {
+            if (gKey !== key) {
+              // @ts-ignore
+              flags[gKey] = false;
+              const el = document.getElementById(
+                `ff-${gKey}`,
+              ) as HTMLInputElement;
+              if (el) el.checked = false;
+            }
+          });
+        }
+      }
+
       configManager.set("fastFlags", flags);
     });
   } else if (typeof value === "number") {
