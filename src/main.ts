@@ -27,6 +27,7 @@ import { platform } from "@tauri-apps/plugin-os";
 
 const appWindow = getCurrentWindow();
 const currentPlatform = platform();
+
 const configManager = ConfigManager.getInstance();
 
 // Logging setup

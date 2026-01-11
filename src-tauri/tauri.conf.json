@@ -11,28 +11,7 @@
   },
   "app": {
     "withGlobalTauri": true,
-    "windows": [
-      {
-        "label": "splashscreen",
-        "url": "splashscreen.html",
-        "decorations": false,
-        "transparent": true,
-        "title": "nullstrap",
-        "width": 850,
-        "height": 450,
-        "center": true
-      },
-      {
-        "label": "main",
-        "url": "index.html",
-        "decorations": false,
-        "transparent": true,
-        "title": "nullstrap",
-        "width": 800,
-        "height": 600,
-        "visible": false
-      }
-    ],
+
     "security": {
       "csp": null
     }

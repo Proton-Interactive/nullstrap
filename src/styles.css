@@ -11,6 +11,8 @@ body {
     overflow: hidden;
     opacity: 0;
     user-select: none;
+    border: 1px solid slateblue;
+    box-sizing: border-box;
 }
 
 /* animations */

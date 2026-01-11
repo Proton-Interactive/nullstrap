@@ -154,6 +154,42 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_os::init())
         .setup(|app| {
+            let splash_builder = tauri::WebviewWindowBuilder::new(
+                app,
+                "splashscreen",
+                tauri::WebviewUrl::App("splashscreen.html".into()),
+            )
+            .inner_size(850.0, 450.0)
+            .center()
+            .title("nullstrap");
+
+            #[cfg(target_os = "linux")]
+            let splash_builder = splash_builder.decorations(false).transparent(false);
+
+            #[cfg(not(target_os = "linux"))]
+            let splash_builder = splash_builder.decorations(false).transparent(true);
+
+            println!("Creating splashscreen window...");
+            splash_builder.build()?;
+
+            let main_builder = tauri::WebviewWindowBuilder::new(
+                app,
+                "main",
+                tauri::WebviewUrl::App("index.html".into()),
+            )
+            .inner_size(800.0, 600.0)
+            .visible(false)
+            .title("nullstrap");
+
+            #[cfg(target_os = "linux")]
+            let main_builder = main_builder.decorations(false).transparent(false);
+
+            #[cfg(not(target_os = "linux"))]
+            let main_builder = main_builder.decorations(false).transparent(true);
+
+            println!("Creating main window...");
+            main_builder.build()?;
+
             // setup window attributes
             #[cfg(target_os = "windows")]
             {
