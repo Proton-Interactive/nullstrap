@@ -62,6 +62,7 @@ const configManager = ConfigManager.getInstance();
           .join(" ");
         const line = `[${new Date().toISOString()}] [${level}] ${msg}\n`;
         await writeTextFile(logPath, line, { append: true });
+        await invoke("log_to_console", { message: line });
       } catch (err) {
         // Prevent infinite loop if logging fails
       }
@@ -292,6 +293,13 @@ if (fpsUnlockToggle) {
   });
 }
 
+if (currentPlatform === "macos") {
+  const desc = document.getElementById("fps-unlock-desc");
+  if (desc) {
+    desc.textContent += " ( Might not work on some macbooks with vsync )";
+  }
+}
+
 // Sober Settings Logic
 if (currentPlatform === "linux") {
   const soberSection = document.getElementById("sober-section");
@@ -316,7 +324,7 @@ if (currentPlatform === "linux") {
   soberKeys.forEach((key) => {
     const el = document.getElementById(`sober-${key}`) as HTMLInputElement;
     if (el) {
-      el.checked = currentSober[key];
+      el.checked = currentSober[key] as boolean;
       el.addEventListener("change", (e) => {
         const settings = configManager.get("sober");
         // @ts-ignore
@@ -357,7 +365,15 @@ document
   ?.addEventListener("click", async () => {
     try {
       const dir = await appLocalDataDir();
+      console.log(`Opening install folder at: ${dir}`);
+
+      if (!(await exists(dir))) {
+        console.log("Directory missing, creating...");
+        await mkdir(dir, { recursive: true });
+      }
+
       await openPath(dir);
+      console.log("openPath executed.");
     } catch (e) {
       console.error("Failed to open install folder", e);
     }
@@ -519,8 +535,20 @@ async function saveFastFlagsToDisk() {
     for (const entry of entries) {
       if (entry.isDirectory) {
         const versionPath = await join(versionsDir, entry.name);
+        let clientSettingsDir: string;
 
-        const clientSettingsDir = await join(versionPath, "ClientSettings");
+        if (currentPlatform === "macos") {
+          clientSettingsDir = await join(
+            versionPath,
+            "RobloxPlayer.app",
+            "Contents",
+            "MacOS",
+            "ClientSettings",
+          );
+        } else {
+          clientSettingsDir = await join(versionPath, "ClientSettings");
+        }
+
         if (!(await exists(clientSettingsDir))) {
           await mkdir(clientSettingsDir, { recursive: true });
         }
@@ -664,6 +692,12 @@ document.getElementById("btn-launch")?.addEventListener("click", async () => {
           })();
         });
       });
+
+      if (currentPlatform !== "windows") {
+        showNotification("Setting permissions...");
+        const chmod = Command.create("chmod", ["+x", exePath]);
+        await chmod.execute();
+      }
     }
 
     showNotification("Launching Roblox...");

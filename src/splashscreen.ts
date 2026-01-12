@@ -1,6 +1,6 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { getName, getVersion } from "@tauri-apps/api/app";
+import { getVersion } from "@tauri-apps/api/app";
 import { invoke } from "@tauri-apps/api/core";
 import { emit } from "@tauri-apps/api/event";
 import {
@@ -53,6 +53,7 @@ const appWindow = getCurrentWindow();
           .join(" ");
         const line = `[${new Date().toISOString()}] [${level}] ${msg}\n`;
         await writeTextFile(logPath, line, { append: true });
+        await invoke("log_to_console", { message: line });
       } catch (err) {
         // Prevent infinite loop if logging fails
       }
@@ -167,8 +168,9 @@ async function launchMainApp() {
 
 async function getLatestRobloxVersionHash(): Promise<string | null> {
   try {
+    const binaryType = platform() === "macos" ? "MacPlayer" : "WindowsPlayer";
     const response = await fetch(
-      "https://clientsettings.roblox.com/v2/client-version/WindowsPlayer/channel/LIVE",
+      `https://clientsettings.roblox.com/v2/client-version/${binaryType}/channel/LIVE`,
       {
         method: "GET",
         headers: {
@@ -284,8 +286,10 @@ async function launchRoblox() {
     return launchSober();
   }
 
-  if (platform() !== "windows") {
-    alert("This feature is currently only available on Windows and Linux.");
+  if (platform() !== "windows" && platform() !== "macos") {
+    alert(
+      "This feature is currently only available on Windows, macOS, and Linux.",
+    );
     return;
   }
 
@@ -305,7 +309,11 @@ async function launchRoblox() {
   }
 
   const versionDir = `rblx-versions/${hash}`;
-  const executableRelPath = `${versionDir}/RobloxPlayerBeta.exe`;
+  let executableRelPath = `${versionDir}/RobloxPlayerBeta.exe`;
+
+  if (platform() === "macos") {
+    executableRelPath = `${versionDir}/RobloxPlayer.app`;
+  }
 
   // check if already installed
   const isInstalled = await exists(executableRelPath, {
@@ -328,36 +336,48 @@ async function launchRoblox() {
     recursive: true,
   });
 
-  const filesToDownload = {
-    "RobloxApp.zip": "",
-    "shaders.zip": "shaders/",
-    "ssl.zip": "ssl/",
-    "WebView2.zip": "",
-    "WebView2RuntimeInstaller.zip": "WebView2RuntimeInstaller/",
-    "content-avatar.zip": "content/avatar/",
-    "content-configs.zip": "content/configs/",
-    "content-fonts.zip": "content/fonts/",
-    "content-sky.zip": "content/sky/",
-    "content-sounds.zip": "content/sounds/",
-    "content-textures2.zip": "content/textures/",
-    "content-models.zip": "content/models/",
-    "content-platform-fonts.zip": "PlatformContent/pc/fonts/",
-    "content-platform-dictionaries.zip":
-      "PlatformContent/pc/shared_compression_dictionaries/",
-    "content-terrain.zip": "PlatformContent/pc/terrain/",
-    "content-textures3.zip": "PlatformContent/pc/textures/",
-    "extracontent-luapackages.zip": "ExtraContent/LuaPackages/",
-    "extracontent-translations.zip": "ExtraContent/translations/",
-    "extracontent-models.zip": "ExtraContent/models/",
-    "extracontent-textures.zip": "ExtraContent/textures/",
-    "extracontent-places.zip": "ExtraContent/places/",
-  };
+  let filesToDownload: Record<string, string> = {};
+
+  if (platform() === "macos") {
+    filesToDownload = {
+      "RobloxPlayer.zip": "",
+    };
+  } else {
+    filesToDownload = {
+      "RobloxApp.zip": "",
+      "shaders.zip": "shaders/",
+      "ssl.zip": "ssl/",
+      "WebView2.zip": "",
+      "WebView2RuntimeInstaller.zip": "WebView2RuntimeInstaller/",
+      "content-avatar.zip": "content/avatar/",
+      "content-configs.zip": "content/configs/",
+      "content-fonts.zip": "content/fonts/",
+      "content-sky.zip": "content/sky/",
+      "content-sounds.zip": "content/sounds/",
+      "content-textures2.zip": "content/textures/",
+      "content-models.zip": "content/models/",
+      "content-platform-fonts.zip": "PlatformContent/pc/fonts/",
+      "content-platform-dictionaries.zip":
+        "PlatformContent/pc/shared_compression_dictionaries/",
+      "content-terrain.zip": "PlatformContent/pc/terrain/",
+      "content-textures3.zip": "PlatformContent/pc/textures/",
+      "extracontent-luapackages.zip": "ExtraContent/LuaPackages/",
+      "extracontent-translations.zip": "ExtraContent/translations/",
+      "extracontent-models.zip": "ExtraContent/models/",
+      "extracontent-textures.zip": "ExtraContent/textures/",
+      "extracontent-places.zip": "ExtraContent/places/",
+    };
+  }
 
   const totalFiles = Object.keys(filesToDownload).length;
   let processedFiles = 0;
 
   for (const [filename, extractPath] of Object.entries(filesToDownload)) {
-    const url = `https://setup.rbxcdn.com/${hash}-${filename}`;
+    let url = `https://setup.rbxcdn.com/${hash}-${filename}`;
+    if (platform() === "macos") {
+      url = `https://setup.rbxcdn.com/mac/${hash}-${filename}`;
+    }
+
     console.log(`Downloading ${filename}...`);
 
     const percent = Math.floor((processedFiles / totalFiles) * 100);
@@ -369,13 +389,16 @@ async function launchRoblox() {
         console.error(`Failed to download ${filename}: ${response.status}`);
 
         // fail fast if core zip fails
-        if (filename === "RobloxApp.zip") {
+        if (
+          filename === "RobloxApp.zip" ||
+          (platform() === "macos" && filename === "RobloxPlayer.zip")
+        ) {
           await updateProgress(
             "Error",
-            "Critical download failed: RobloxApp.zip",
+            `Critical download failed: ${filename}`,
             0,
           );
-          throw new Error("critical file robloxapp.zip failed to download");
+          throw new Error(`critical file ${filename} failed to download`);
         }
 
         // increment anyway to continue for non-critical files
@@ -395,33 +418,40 @@ async function launchRoblox() {
 
         if (!innerFilename || innerFilename === ".") continue;
 
+        // Ignore dotfiles
+        if (innerFilename.split("/").pop()?.startsWith(".")) continue;
+
         const finalPath = extractPath
           ? `${extractPath}${innerFilename}`
           : innerFilename;
 
-        if (finalPath.endsWith("/")) {
-          await mkdir(`${versionDir}/${finalPath}`, {
+        try {
+          if (finalPath.endsWith("/")) {
+            await mkdir(`${versionDir}/${finalPath}`, {
+              baseDir: BaseDirectory.AppLocalData,
+              recursive: true,
+            });
+            continue;
+          }
+
+          const destination = `${versionDir}/${finalPath}`;
+
+          // ensure parent exists
+          const lastSlash = destination.lastIndexOf("/");
+          if (lastSlash !== -1) {
+            const parent = destination.substring(0, lastSlash);
+            await mkdir(parent, {
+              baseDir: BaseDirectory.AppLocalData,
+              recursive: true,
+            });
+          }
+
+          await writeFile(destination, fileData, {
             baseDir: BaseDirectory.AppLocalData,
-            recursive: true,
           });
-          continue;
+        } catch (innerErr) {
+          console.warn(`Failed to extract ${innerFilename}:`, innerErr);
         }
-
-        const destination = `${versionDir}/${finalPath}`;
-
-        // ensure parent exists
-        const lastSlash = destination.lastIndexOf("/");
-        if (lastSlash !== -1) {
-          const parent = destination.substring(0, lastSlash);
-          await mkdir(parent, {
-            baseDir: BaseDirectory.AppLocalData,
-            recursive: true,
-          });
-        }
-
-        await writeFile(destination, fileData, {
-          baseDir: BaseDirectory.AppLocalData,
-        });
       }
     } catch (e) {
       console.error(`Error processing ${filename}:`, e);
@@ -438,82 +468,122 @@ async function launchExecutable(hash: string) {
   try {
     const appLocalData = await appLocalDataDir();
     const versionDir = await join(appLocalData, "rblx-versions", hash);
-    const exePath = await join(versionDir, "RobloxPlayerBeta.exe");
 
-    console.log("Launching executable at:", exePath);
-    console.log("Working directory:", versionDir);
+    let command: Command<string>;
 
-    // ensure appsettings.xml exists
-    // this file is required for the portable executable to find its content folder
-    const relativeAppSettingsPath = `rblx-versions/${hash}/AppSettings.xml`;
-    if (
-      !(await exists(relativeAppSettingsPath, {
-        baseDir: BaseDirectory.AppLocalData,
-      }))
-    ) {
-      console.log("Creating AppSettings.xml...");
-      const appSettingsContent = `<?xml version="1.0" encoding="UTF-8"?>
+    if (platform() === "macos") {
+      const appPath = await join(versionDir, "RobloxPlayer.app");
+      const binaryPath = await join(
+        appPath,
+        "Contents",
+        "MacOS",
+        "RobloxPlayer",
+      );
+
+      console.log("Setting permissions for:", appPath);
+      const chmod = Command.create("chmod", ["-R", "755", appPath]);
+      await chmod.execute();
+
+      if (!(await exists(binaryPath))) {
+        throw new Error(`Executable not found at ${binaryPath}`);
+      }
+
+      console.log("Removing quarantine attribute for:", appPath);
+      const xattr = Command.create("xattr", [
+        "-d",
+        "-r",
+        "com.apple.quarantine",
+        appPath,
+      ]);
+      try {
+        await xattr.execute();
+      } catch (e) {
+        console.warn("Failed to remove quarantine attribute:", e);
+      }
+
+      console.log("Launching app at:", appPath);
+      // open -a "path/to/RobloxPlayer.app" --args --app
+      command = Command.create("open", ["-a", appPath, "--args", "--app"]);
+    } else {
+      const exePath = await join(versionDir, "RobloxPlayerBeta.exe");
+
+      console.log("Launching executable at:", exePath);
+      console.log("Working directory:", versionDir);
+
+      // ensure appsettings.xml exists
+      // this file is required for the portable executable to find its content folder
+      const relativeAppSettingsPath = `rblx-versions/${hash}/AppSettings.xml`;
+      if (
+        !(await exists(relativeAppSettingsPath, {
+          baseDir: BaseDirectory.AppLocalData,
+        }))
+      ) {
+        console.log("Creating AppSettings.xml...");
+        const appSettingsContent = `<?xml version="1.0" encoding="UTF-8"?>
 <Settings>
 	<ContentFolder>content</ContentFolder>
 	<BaseUrl>http://www.roblox.com</BaseUrl>
 </Settings>`;
-      await writeFile(
-        relativeAppSettingsPath,
-        new TextEncoder().encode(appSettingsContent),
+        await writeFile(
+          relativeAppSettingsPath,
+          new TextEncoder().encode(appSettingsContent),
+          {
+            baseDir: BaseDirectory.AppLocalData,
+          },
+        );
+      }
+
+      // validate critical files
+      const relativeVersionDir = `rblx-versions/${hash}`;
+      const criticalFiles = [
+        "RobloxPlayerBeta.exe",
+        "RobloxPlayerBeta.dll",
+        "WebView2Loader.dll",
+      ];
+      const missingFiles = [];
+
+      for (const file of criticalFiles) {
+        if (
+          !(await exists(`${relativeVersionDir}/${file}`, {
+            baseDir: BaseDirectory.AppLocalData,
+          }))
+        ) {
+          missingFiles.push(file);
+        }
+      }
+
+      if (missingFiles.length > 0) {
+        console.error("Missing critical files:", missingFiles);
+        await updateProgress(
+          "Error",
+          `Missing files: ${missingFiles.join(", ")}`,
+          100,
+        );
+        return;
+      }
+
+      // added --app argument to ensure it launches the gui
+      command = Command.create(
+        "cmd",
+        ["/C", "start", "", "RobloxPlayerBeta.exe", "--app"],
         {
-          baseDir: BaseDirectory.AppLocalData,
+          cwd: versionDir,
         },
       );
     }
 
-    // validate critical files
-    const relativeVersionDir = `rblx-versions/${hash}`;
-    const criticalFiles = [
-      "RobloxPlayerBeta.exe",
-      "RobloxPlayerBeta.dll",
-      "WebView2Loader.dll",
-    ];
-    const missingFiles = [];
-
-    for (const file of criticalFiles) {
-      if (
-        !(await exists(`${relativeVersionDir}/${file}`, {
-          baseDir: BaseDirectory.AppLocalData,
-        }))
-      ) {
-        missingFiles.push(file);
-      }
-    }
-
-    if (missingFiles.length > 0) {
-      console.error("Missing critical files:", missingFiles);
-      await updateProgress(
-        "Error",
-        `Missing files: ${missingFiles.join(", ")}`,
-        100,
-      );
-      return;
-    }
-
-    // added --app argument to ensure it launches the gui
-    const command = Command.create(
-      "cmd",
-      ["/C", "start", "", "RobloxPlayerBeta.exe", "--app"],
-      {
-        cwd: versionDir,
-      },
-    );
-
-    command.on("close", (data) => {
+    command.on("close", (data: any) => {
       console.log(
         `command finished with code ${data.code} and signal ${data.signal}`,
       );
     });
-    command.on("error", (error) => console.error(`command error: "${error}"`));
-    command.stdout.on("data", (line) =>
+    command.on("error", (error: any) =>
+      console.error(`command error: "${error}"`),
+    );
+    command.stdout.on("data", (line: any) =>
       console.log(`command stdout: "${line}"`),
     );
-    command.stderr.on("data", (line) =>
+    command.stderr.on("data", (line: any) =>
       console.log(`command stderr: "${line}"`),
     );
 
@@ -545,17 +615,23 @@ document
 document.getElementById("studio-btn")?.addEventListener("click", launchStudio);
 
 // create folders
-await mkdir("rblx-versions/", {
-  baseDir: BaseDirectory.AppLocalData,
-  recursive: true,
-});
+(async () => {
+  try {
+    await mkdir("rblx-versions/", {
+      baseDir: BaseDirectory.AppLocalData,
+      recursive: true,
+    });
 
-await mkdir("scripts/", {
-  baseDir: BaseDirectory.AppLocalData,
-  recursive: true,
-});
+    await mkdir("scripts/", {
+      baseDir: BaseDirectory.AppLocalData,
+      recursive: true,
+    });
 
-await mkdir("logs/", {
-  baseDir: BaseDirectory.AppLocalData,
-  recursive: true,
-});
+    await mkdir("logs/", {
+      baseDir: BaseDirectory.AppLocalData,
+      recursive: true,
+    });
+  } catch (e) {
+    console.error("Failed to create directories:", e);
+  }
+})();

@@ -55,6 +55,21 @@
           "name": "open",
           "cmd": "open",
           "args": true
+        },
+        {
+          "name": "chmod",
+          "cmd": "chmod",
+          "args": true
+        },
+        {
+          "name": "xattr",
+          "cmd": "xattr",
+          "args": true
+        },
+        {
+          "name": "pgrep",
+          "cmd": "pgrep",
+          "args": true
         }
       ]
     },
@@ -75,12 +90,30 @@
           "name": "open",
           "cmd": "open",
           "args": true
+        },
+        {
+          "name": "chmod",
+          "cmd": "chmod",
+          "args": true
+        },
+        {
+          "name": "xattr",
+          "cmd": "xattr",
+          "args": true
+        },
+        {
+          "name": "pgrep",
+          "cmd": "pgrep",
+          "args": true
         }
       ]
     },
     {
       "identifier": "fs:allow-mkdir",
       "allow": [
+        {
+          "path": "$APPLOCALDATA"
+        },
         {
           "path": "$APPLOCALDATA/rblx-versions"
         },
@@ -110,6 +143,9 @@
     {
       "identifier": "fs:allow-exists",
       "allow": [
+        {
+          "path": "$APPLOCALDATA"
+        },
         {
           "path": "$APPLOCALDATA/rblx-versions"
         },
@@ -153,6 +189,9 @@
       "allow": [
         {
           "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13.xml"
+        },
+        {
+          "path": "$HOME/Library/Roblox/GlobalBasicSettings_13.xml"
         }
       ]
     },
@@ -267,6 +306,9 @@
         },
         {
           "url": "https://clientsettings.roblox.com/v2/client-version/WindowsPlayer/channel/LIVE"
+        },
+        {
+          "url": "https://clientsettings.roblox.com/v2/client-version/MacPlayer/channel/LIVE"
         },
         {
           "url": "https://rdd.whatexpsare.online/**"

@@ -39,6 +39,7 @@ export interface AppConfig {
   snowfallEnabled: boolean;
   openingAnimationEnabled: boolean;
   unlockedFramerate: boolean;
+  macOsUnlockFps: boolean;
   windowWidth: number;
   windowHeight: number;
   lastTab: string;
@@ -51,6 +52,7 @@ const DEFAULT_CONFIG: AppConfig = {
   snowfallEnabled: false,
   openingAnimationEnabled: true,
   unlockedFramerate: false,
+  macOsUnlockFps: false,
   windowWidth: 800,
   windowHeight: 600,
   lastTab: "general",

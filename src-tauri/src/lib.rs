@@ -114,6 +114,47 @@ fn save_fast_flags(_flags_json: String) -> Result<String, String> {
     }
 }
 
+// log to console
+#[tauri::command]
+fn log_to_console(message: String) {
+    println!("{}", message);
+}
+
+#[tauri::command]
+fn set_beam_sync(enable: bool) {
+    println!("RUST: set_beam_sync called with enable: {}", enable);
+    #[cfg(target_os = "macos")]
+    unsafe {
+        #[link(name = "CoreGraphics", kind = "framework")]
+        extern "C" {
+            fn CGSSetDebugOptions(options: i32);
+            fn CGSGetDebugOptions(options: *mut i32);
+        }
+
+        const K_CGS_DISABLE_BEAM_SYNC: i32 = 0x00080000;
+
+        let mut options: i32 = 0;
+        CGSGetDebugOptions(&mut options);
+        println!("RUST: Current CGS debug options: {:#010x}", options);
+
+        if enable {
+            println!("RUST: Enabling Beam Sync (clearing 0x00080000 bit)");
+            options &= !K_CGS_DISABLE_BEAM_SYNC;
+        } else {
+            println!("RUST: Disabling Beam Sync (setting 0x00080000 bit)");
+            options |= K_CGS_DISABLE_BEAM_SYNC;
+        }
+
+        println!("RUST: New CGS debug options: {:#010x}", options);
+        CGSSetDebugOptions(options);
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        println!("RUST: set_beam_sync not supported on this platform");
+        let _ = enable;
+    }
+}
+
 pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let show_i = MenuItemBuilder::with_id("show", "Show Window").build(app)?;
     let quit_i = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
@@ -224,7 +265,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             apply_square_corners,
-            save_fast_flags
+            save_fast_flags,
+            log_to_console,
+            set_beam_sync
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
