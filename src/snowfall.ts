@@ -14,7 +14,7 @@ export class Snowfall {
     this.canvas.style.width = "100%";
     this.canvas.style.height = "100%";
     this.canvas.style.pointerEvents = "none"; // Click through
-    this.canvas.style.zIndex = "9999"; // On top of everything
+    this.canvas.style.zIndex = "1"; // On top of everything
     this.ctx = this.canvas.getContext("2d")!;
 
     window.addEventListener("resize", () => {

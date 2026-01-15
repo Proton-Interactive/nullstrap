@@ -31,7 +31,10 @@ body {
     box-sizing: border-box;
     gap: 30px;
     opacity: 1;
-    border: 1px solid slateblue;
+    border-left: 1px solid slateblue;
+    border-right: 1px solid slateblue;
+    border-bottom: 1px solid slateblue;
+    /* no border-top */
 }
 
 .container.animate-entry {
@@ -188,4 +191,16 @@ body {
 
 .titlebar button:hover {
     background: #333332;
+}
+
+.link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1c1c1b;
+    border-color: #444;
+    font-weight: bold;
+    padding: 2.5px;
+    font-size: 1.2rem;
+    text-decoration: none;
 }

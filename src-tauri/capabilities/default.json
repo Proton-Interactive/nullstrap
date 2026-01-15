@@ -27,6 +27,12 @@
         },
         {
           "path": "$APPLOCALDATA/**"
+        },
+        {
+          "path": "$TEMP/**"
+        },
+        {
+          "path": "https://swifttunnel.net/signup"
         }
       ]
     },
@@ -70,6 +76,11 @@
           "name": "pgrep",
           "cmd": "pgrep",
           "args": true
+        },
+        {
+          "name": "RobloxPlayerBeta",
+          "cmd": "$APPLOCALDATA/rblx-versions/**/RobloxPlayerBeta.exe",
+          "args": true
         }
       ]
     },
@@ -104,6 +115,11 @@
         {
           "name": "pgrep",
           "cmd": "pgrep",
+          "args": true
+        },
+        {
+          "name": "RobloxPlayerBeta",
+          "cmd": "$APPLOCALDATA/rblx-versions/**/RobloxPlayerBeta.exe",
           "args": true
         }
       ]
@@ -174,13 +190,22 @@
           "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13.xml"
         },
         {
+          "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13_Studio.xml"
+        },
+        {
           "path": "$HOME/.var/app/org.vinegarhq.Sober/config/sober/config.json"
         },
         {
           "path": "$HOME/.var/app/org.vinegarhq.Sober/data/sober/appData/GlobalBasicSettings_13.xml"
         },
         {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/data/sober/appData/GlobalBasicSettings_13_Studio.xml"
+        },
+        {
           "path": "$HOME/Library/Roblox/GlobalBasicSettings_13.xml"
+        },
+        {
+          "path": "$HOME/Library/Roblox/GlobalBasicSettings_13_Studio.xml"
         }
       ]
     },
@@ -191,7 +216,13 @@
           "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13.xml"
         },
         {
+          "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13_Studio.xml"
+        },
+        {
           "path": "$HOME/Library/Roblox/GlobalBasicSettings_13.xml"
+        },
+        {
+          "path": "$HOME/Library/Roblox/GlobalBasicSettings_13_Studio.xml"
         }
       ]
     },
@@ -211,13 +242,25 @@
           "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13.xml"
         },
         {
+          "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13_Studio.xml"
+        },
+        {
           "path": "$HOME/.var/app/org.vinegarhq.Sober/config/sober/config.json"
         },
         {
           "path": "$HOME/.var/app/org.vinegarhq.Sober/data/sober/appData/GlobalBasicSettings_13.xml"
         },
         {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/data/sober/appData/GlobalBasicSettings_13_Studio.xml"
+        },
+        {
           "path": "$HOME/Library/Roblox/GlobalBasicSettings_13.xml"
+        },
+        {
+          "path": "$HOME/Library/Roblox/GlobalBasicSettings_13_Studio.xml"
+        },
+        {
+          "path": "$TEMP/**"
         }
       ]
     },
@@ -240,10 +283,22 @@
           "path": "$HOME/.var/app/org.vinegarhq.Sober/data/sober/appData/GlobalBasicSettings_13.xml"
         },
         {
+          "path": "$HOME/.var/app/org.vinegarhq.Sober/data/sober/appData/GlobalBasicSettings_13_Studio.xml"
+        },
+        {
           "path": "$HOME/Library/Roblox/GlobalBasicSettings_13.xml"
         },
         {
+          "path": "$HOME/Library/Roblox/GlobalBasicSettings_13_Studio.xml"
+        },
+        {
           "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13.xml"
+        },
+        {
+          "path": "$LOCALDATA/Roblox/GlobalBasicSettings_13_Studio.xml"
+        },
+        {
+          "path": "$TEMP/**"
         }
       ]
     },
@@ -261,6 +316,9 @@
         },
         {
           "path": "$HOME/.var/app/org.vinegarhq.Sober/config/sober/config.json"
+        },
+        {
+          "path": "$TEMP/**"
         }
       ]
     },
@@ -311,6 +369,12 @@
           "url": "https://clientsettings.roblox.com/v2/client-version/MacPlayer/channel/LIVE"
         },
         {
+          "url": "https://clientsettings.roblox.com/v2/client-version/WindowsStudio64/channel/LIVE"
+        },
+        {
+          "url": "https://clientsettings.roblox.com/v2/client-version/MacStudio/channel/LIVE"
+        },
+        {
           "url": "https://rdd.whatexpsare.online/**"
         },
         {
@@ -318,8 +382,15 @@
         },
         {
           "url": "https://setup-aws.rbxcdn.com/**"
+        },
+        {
+          "url": "https://download.wireguard.com/**"
         }
       ]
-    }
+    },
+    "drpc:allow-spawn-thread",
+    "drpc:allow-set-activity",
+    "drpc:allow-clear-activity",
+    "drpc:allow-destroy-thread"
   ]
 }

@@ -9,6 +9,8 @@ import {
   exists,
   BaseDirectory,
   writeTextFile,
+  readDir,
+  readFile,
 } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
 import { unzipSync } from "fflate";
@@ -18,8 +20,9 @@ import { appLocalDataDir, join } from "@tauri-apps/api/path";
 import { ConfigManager } from "./config";
 
 const appWindow = getCurrentWindow();
+const configManager = ConfigManager.getInstance();
 
-// Logging setup
+// logging setup
 (async () => {
   try {
     const appDir = await appLocalDataDir();
@@ -85,7 +88,6 @@ invoke("apply_square_corners");
 
 // animate entry
 window.addEventListener("DOMContentLoaded", () => {
-  const configManager = ConfigManager.getInstance();
   if (configManager.get("openingAnimationEnabled")) {
     document.querySelector(".container")?.classList.add("animate-entry");
   } else {
@@ -166,9 +168,13 @@ async function launchMainApp() {
   }
 }
 
-async function getLatestRobloxVersionHash(): Promise<string | null> {
+async function getLatestRobloxVersionHash(
+  binaryTypeOverride?: string,
+): Promise<string | null> {
   try {
-    const binaryType = platform() === "macos" ? "MacPlayer" : "WindowsPlayer";
+    const binaryType =
+      binaryTypeOverride ||
+      (platform() === "macos" ? "MacPlayer" : "WindowsPlayer");
     const response = await fetch(
       `https://clientsettings.roblox.com/v2/client-version/${binaryType}/channel/LIVE`,
       {
@@ -281,8 +287,61 @@ async function launchSober() {
 }
 
 // launch roblox
+async function launchVinegar() {
+  try {
+    const flatpakCheck = Command.create("flatpak", ["--version"]);
+    const output = await flatpakCheck.execute();
+    if (output.code !== 0) {
+      alert("Flatpak is not installed. Please install Flatpak and try again.");
+      return;
+    }
+
+    const infoCmd = Command.create("flatpak", [
+      "info",
+      "org.vinegarhq.Vinegar",
+    ]);
+    const infoOut = await infoCmd.execute();
+
+    if (infoOut.code !== 0) {
+      const installConfirm = confirm(
+        "Vinegar (Roblox Studio for Linux) is not installed. Would you like to install it via Flatpak?",
+      );
+      if (installConfirm) {
+        await updateProgress("Installing", "Installing Vinegar...", 50);
+        const installCmd = Command.create("flatpak", [
+          "install",
+          "flathub",
+          "org.vinegarhq.Vinegar",
+          "-y",
+        ]);
+        const installOut = await installCmd.execute();
+        if (installOut.code !== 0) {
+          throw new Error("Failed to install Vinegar");
+        }
+      } else {
+        return;
+      }
+    }
+
+    await updateProgress("Launching", "Starting Vinegar...", 100);
+    const runCmd = Command.create("flatpak", ["run", "org.vinegarhq.Vinegar"]);
+    runCmd.spawn();
+    setTimeout(hideProgress, 1000);
+  } catch (e) {
+    console.error("Failed to launch Vinegar:", e);
+    alert("Failed to launch Vinegar: " + e);
+    hideProgress();
+  }
+}
+
 async function launchRoblox() {
   if (platform() === "linux") {
+    const flatpakCheck = Command.create("flatpak", ["--version"]);
+    const output = await flatpakCheck.execute();
+    if (output.code !== 0) {
+      alert("Flatpak is not installed. Please install Flatpak and try again.");
+      return;
+    }
     return launchSober();
   }
 
@@ -464,7 +523,22 @@ async function launchRoblox() {
   await launchExecutable(hash);
 }
 
-async function launchExecutable(hash: string) {
+async function launchExecutable(
+  hash: string,
+  options: {
+    execName?: string;
+    appName?: string;
+    dllName?: string;
+    args?: string[];
+  } = {},
+) {
+  const {
+    execName = "RobloxPlayerBeta.exe",
+    appName = "RobloxPlayer.app",
+    dllName = "RobloxPlayerBeta.dll",
+    args = ["--app"],
+  } = options;
+
   try {
     const appLocalData = await appLocalDataDir();
     const versionDir = await join(appLocalData, "rblx-versions", hash);
@@ -472,13 +546,9 @@ async function launchExecutable(hash: string) {
     let command: Command<string>;
 
     if (platform() === "macos") {
-      const appPath = await join(versionDir, "RobloxPlayer.app");
-      const binaryPath = await join(
-        appPath,
-        "Contents",
-        "MacOS",
-        "RobloxPlayer",
-      );
+      const appPath = await join(versionDir, appName);
+      const binaryName = appName.replace(".app", "");
+      const binaryPath = await join(appPath, "Contents", "MacOS", binaryName);
 
       console.log("Setting permissions for:", appPath);
       const chmod = Command.create("chmod", ["-R", "755", appPath]);
@@ -505,7 +575,7 @@ async function launchExecutable(hash: string) {
       // open -a "path/to/RobloxPlayer.app" --args --app
       command = Command.create("open", ["-a", appPath, "--args", "--app"]);
     } else {
-      const exePath = await join(versionDir, "RobloxPlayerBeta.exe");
+      const exePath = await join(versionDir, execName);
 
       console.log("Launching executable at:", exePath);
       console.log("Working directory:", versionDir);
@@ -535,11 +605,7 @@ async function launchExecutable(hash: string) {
 
       // validate critical files
       const relativeVersionDir = `rblx-versions/${hash}`;
-      const criticalFiles = [
-        "RobloxPlayerBeta.exe",
-        "RobloxPlayerBeta.dll",
-        "WebView2Loader.dll",
-      ];
+      const criticalFiles = [execName, dllName, "WebView2Loader.dll"];
       const missingFiles = [];
 
       for (const file of criticalFiles) {
@@ -563,13 +629,9 @@ async function launchExecutable(hash: string) {
       }
 
       // added --app argument to ensure it launches the gui
-      command = Command.create(
-        "cmd",
-        ["/C", "start", "", "RobloxPlayerBeta.exe", "--app"],
-        {
-          cwd: versionDir,
-        },
-      );
+      command = Command.create("cmd", ["/C", "start", "", execName, ...args], {
+        cwd: versionDir,
+      });
     }
 
     command.on("close", (data: any) => {
@@ -588,9 +650,6 @@ async function launchExecutable(hash: string) {
     );
 
     await command.spawn();
-    // success, minimize to tray
-    await appWindow.hide();
-
     // close progress
     setTimeout(hideProgress, 2000);
   } catch (e) {
@@ -601,7 +660,235 @@ async function launchExecutable(hash: string) {
 }
 
 // launch studio
-async function launchStudio() {}
+async function launchStudio() {
+  if (platform() === "linux") {
+    return launchVinegar();
+  }
+
+  if (platform() !== "windows" && platform() !== "macos") {
+    alert("Studio is currently only available on Windows, macOS, and Linux.");
+    return;
+  }
+
+  await updateProgress(
+    "Checking Version",
+    "Fetching latest Roblox Studio version...",
+    0,
+  );
+
+  const binaryType = platform() === "macos" ? "MacStudio" : "WindowsStudio64";
+  const hash = await getLatestRobloxVersionHash(binaryType);
+
+  if (!hash) {
+    console.error("Could not get version hash");
+    await updateProgress("Error", "Could not get version hash", 0);
+    setTimeout(hideProgress, 3000);
+    return;
+  }
+
+  const versionDir = `rblx-versions/${hash}`;
+  let executableRelPath = `${versionDir}/RobloxStudioBeta.exe`;
+
+  if (platform() === "macos") {
+    executableRelPath = `${versionDir}/RobloxStudio.app`;
+  }
+
+  // check if already installed
+  const isInstalled = await exists(executableRelPath, {
+    baseDir: BaseDirectory.AppLocalData,
+  });
+
+  if (isInstalled) {
+    console.log("Version already installed, launching...");
+    await updateProgress("Launching", "Starting Roblox Studio...", 100);
+    await launchExecutable(hash, {
+      execName: "RobloxStudioBeta.exe",
+      appName: "RobloxStudio.app",
+      dllName: "RobloxStudioBeta.exe",
+      args: [],
+    });
+    return;
+  }
+
+  console.log(`Starting download for ${hash}...`);
+  await updateProgress("Downloading", `Starting download for ${hash}...`, 0);
+
+  // ensure version directory exists
+  await mkdir(versionDir, {
+    baseDir: BaseDirectory.AppLocalData,
+    recursive: true,
+  });
+
+  let filesToDownload: Record<string, string> = {};
+
+  if (platform() === "macos") {
+    filesToDownload = {
+      "RobloxStudio.zip": "",
+    };
+  } else {
+    filesToDownload = {
+      "RobloxStudio.zip": "",
+      "Libraries.zip": "",
+      "redist.zip": "",
+      "shaders.zip": "shaders/",
+      "ssl.zip": "ssl/",
+      "WebView2.zip": "",
+      "WebView2RuntimeInstaller.zip": "WebView2RuntimeInstaller/",
+      "content-avatar.zip": "content/avatar/",
+      "content-configs.zip": "content/configs/",
+      "content-fonts.zip": "content/fonts/",
+      "content-sky.zip": "content/sky/",
+      "content-sounds.zip": "content/sounds/",
+      "content-textures2.zip": "content/textures/",
+      "content-models.zip": "content/models/",
+      "content-platform-fonts.zip": "PlatformContent/pc/fonts/",
+      "content-platform-dictionaries.zip":
+        "PlatformContent/pc/shared_compression_dictionaries/",
+      "content-terrain.zip": "PlatformContent/pc/terrain/",
+      "content-textures3.zip": "PlatformContent/pc/textures/",
+      "extracontent-luapackages.zip": "ExtraContent/LuaPackages/",
+      "extracontent-translations.zip": "ExtraContent/translations/",
+      "extracontent-models.zip": "ExtraContent/models/",
+      "extracontent-textures.zip": "ExtraContent/textures/",
+      "BuiltInPlugins.zip": "BuiltInPlugins/",
+      "Plugins.zip": "Plugins/",
+      "StudioFonts.zip": "StudioFonts/",
+    };
+  }
+
+  const totalFiles = Object.keys(filesToDownload).length;
+  let processedFiles = 0;
+
+  for (const [filename, extractPath] of Object.entries(filesToDownload)) {
+    let url = `https://setup.rbxcdn.com/${hash}-${filename}`;
+    if (platform() === "macos") {
+      url = `https://setup.rbxcdn.com/mac/${hash}-${filename}`;
+    }
+
+    console.log(`Downloading ${filename}...`);
+
+    const percent = Math.floor((processedFiles / totalFiles) * 100);
+    await updateProgress("Downloading", `Downloading ${filename}...`, percent);
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.error(`Failed to download ${filename}: ${response.status}`);
+
+        if (
+          filename === "RobloxStudio.zip" ||
+          (platform() === "macos" && filename === "RobloxStudio.zip")
+        ) {
+          await updateProgress(
+            "Error",
+            `Critical download failed: ${filename}`,
+            0,
+          );
+          throw new Error(`critical file ${filename} failed to download`);
+        }
+        processedFiles++;
+        continue;
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+
+      await updateProgress("Installing", `Extracting ${filename}...`, percent);
+      const unzipped = unzipSync(uint8Array);
+
+      for (const [rawFilename, fileData] of Object.entries(unzipped)) {
+        const innerFilename = rawFilename.replace(/\\/g, "/");
+        if (!innerFilename || innerFilename === ".") continue;
+        if (innerFilename.split("/").pop()?.startsWith(".")) continue;
+
+        const finalPath = extractPath
+          ? `${extractPath}${innerFilename}`
+          : innerFilename;
+
+        try {
+          if (finalPath.endsWith("/")) {
+            await mkdir(`${versionDir}/${finalPath}`, {
+              baseDir: BaseDirectory.AppLocalData,
+              recursive: true,
+            });
+            continue;
+          }
+
+          const destination = `${versionDir}/${finalPath}`;
+          const lastSlash = destination.lastIndexOf("/");
+          if (lastSlash !== -1) {
+            const parent = destination.substring(0, lastSlash);
+            await mkdir(parent, {
+              baseDir: BaseDirectory.AppLocalData,
+              recursive: true,
+            });
+          }
+
+          await writeFile(destination, fileData, {
+            baseDir: BaseDirectory.AppLocalData,
+          });
+        } catch (innerErr) {
+          console.warn(`Failed to extract ${innerFilename}:`, innerErr);
+        }
+      }
+    } catch (e) {
+      console.error(`Error processing ${filename}:`, e);
+    }
+    processedFiles++;
+  }
+
+  // Flatten DLLs for Windows Studio to ensure Qt/Plugins are found
+  if (platform() === "windows") {
+    try {
+      console.log("Checking for nested DLLs...");
+      const entries = await readDir(versionDir, {
+        baseDir: BaseDirectory.AppLocalData,
+      });
+
+      for (const entry of entries) {
+        if (entry.isDirectory) {
+          const subDir = `${versionDir}/${entry.name}`;
+          const subEntries = await readDir(subDir, {
+            baseDir: BaseDirectory.AppLocalData,
+          });
+
+          for (const subEntry of subEntries) {
+            if (subEntry.name.endsWith(".dll")) {
+              console.log(`Moving ${subEntry.name} from ${entry.name} to root`);
+              // Read content
+              const oldPath = `${subDir}/${subEntry.name}`;
+              const newPath = `${versionDir}/${subEntry.name}`;
+
+              // We use rename/copy if available, but fs plugin might need read/write
+              // Since we are using standard fs commands via capabilities, let's try rename if available or read/write
+              // The `fs` plugin doesn't have `rename` exposed in the imports I see.
+              // I'll use read/write as it's safe.
+              const content = await readFile(oldPath, {
+                baseDir: BaseDirectory.AppLocalData,
+              });
+              await writeFile(newPath, content, {
+                baseDir: BaseDirectory.AppLocalData,
+              });
+              // Optional: remove old file
+              // await remove(oldPath, { baseDir: BaseDirectory.AppLocalData });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to flatten DLLs:", e);
+    }
+  }
+
+  console.log("Download and extraction complete.");
+  await updateProgress("Launching", "Starting Roblox Studio...", 100);
+  await launchExecutable(hash, {
+    execName: "RobloxStudioBeta.exe",
+    appName: "RobloxStudio.app",
+    dllName: "RobloxStudioBeta.exe",
+    args: [],
+  });
+}
 
 // launch button logic
 document.getElementById("launch-btn")?.addEventListener("click", launchRoblox);

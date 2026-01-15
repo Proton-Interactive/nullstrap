@@ -3,6 +3,8 @@ use tauri::{
     tray::TrayIconBuilder,
     AppHandle, Manager,
 };
+use tauri_plugin_drpc;
+use sysinfo::System;
 
 // greet command
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -155,6 +157,104 @@ fn set_beam_sync(enable: bool) {
     }
 }
 
+#[tauri::command]
+fn is_roblox_running() -> bool {
+    let mut system = System::new();
+    system.refresh_processes();
+
+    let roblox_names = if cfg!(target_os = "windows") {
+        vec!["RobloxPlayerBeta.exe"]
+    } else if cfg!(target_os = "macos") {
+        vec!["RobloxPlayer"]
+    } else {
+        vec!["RobloxPlayer"]
+    };
+
+    for process in system.processes().values() {
+        let name = process.name().to_lowercase();
+        for roblox_name in &roblox_names {
+            if name.contains(&roblox_name.to_lowercase()) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+#[tauri::command]
+fn get_current_place_id() -> Option<String> {
+    #[cfg(target_os = "windows")]
+    {
+        use std::fs;
+
+        let mut log_dir = dirs::data_local_dir()?;
+        log_dir.push("Roblox");
+        log_dir.push("logs");
+
+        println!("Log dir: {:?}", log_dir);
+        if !log_dir.exists() {
+            println!("Log dir does not exist");
+            return None;
+        }
+
+        let mut log_files = Vec::new();
+        for entry in fs::read_dir(log_dir).ok()? {
+            let entry = entry.ok()?;
+            let path = entry.path();
+            if path.is_file() {
+                if let Some(file_name) = path.file_name().and_then(|n| n.to_str()) {
+                    if file_name.ends_with(".log") {
+                        println!("Found log file: {}", file_name);
+                        if let Ok(metadata) = entry.metadata() {
+                            log_files.push((path, metadata.modified().unwrap_or(std::time::SystemTime::UNIX_EPOCH)));
+                        }
+                    }
+                }
+            }
+        }
+
+        println!("Found {} log files", log_files.len());
+        log_files.sort_by(|a, b| b.1.cmp(&a.1));
+
+        for (path, _) in log_files {
+            if let Ok(content) = fs::read_to_string(&path) {
+                for line in content.lines().rev() {
+                    if line.contains("Joining game") {
+                        println!("Found joining line: {}", line);
+                        let re = regex::Regex::new(r"place (\d+)").ok()?;
+                        if let Some(captures) = re.captures(line) {
+                            if let Some(place_id) = captures.get(1) {
+                                println!("Extracted place ID: {}", place_id.as_str());
+                                return Some(place_id.as_str().to_string());
+                            }
+                        } else {
+                            // Return the line for debugging
+                            return Some(line.to_string());
+                        }
+                    }
+                }
+            } else {
+                println!("Failed to read log file: {:?}", path);
+            }
+        }
+        println!("No place ID found");
+        None
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        None
+    }
+}
+
+#[tauri::command]
+fn get_roblox_game_name() -> String {
+    if let Some(place_id) = get_current_place_id() {
+        place_id
+    } else {
+        "Unknown Game".to_string()
+    }
+}
+
 pub fn create_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let show_i = MenuItemBuilder::with_id("show", "Show Window").build(app)?;
     let quit_i = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
@@ -194,6 +294,7 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_drpc::init())
         .setup(|app| {
             let splash_builder = tauri::WebviewWindowBuilder::new(
                 app,
@@ -267,7 +368,10 @@ pub fn run() {
             apply_square_corners,
             save_fast_flags,
             log_to_console,
-            set_beam_sync
+            set_beam_sync,
+            is_roblox_running,
+            get_current_place_id,
+            get_roblox_game_name
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
