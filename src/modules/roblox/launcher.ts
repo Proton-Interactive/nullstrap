@@ -16,6 +16,7 @@ import { ConfigManager } from "../../config";
 import { showNotification } from "../ui";
 import { saveFastFlagsToDisk } from "./fastflags";
 import { applySkyboxToDisk } from "./skybox";
+import { setActivity } from "../discordRpc";
 
 const currentPlatform = platform();
 const configManager = ConfigManager.getInstance();
@@ -135,7 +136,7 @@ export function setupLauncherUI() {
 
         if (showNotifications) showNotification("extracting roblox...");
         await new Promise<void>((resolve, reject) => {
-          unzip(data, (err, unzipped) => {
+          unzip(uint8Array, (err, unzipped) => {
             if (err) return reject(err);
             (async () => {
               try {
