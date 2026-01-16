@@ -8,6 +8,7 @@ import {
 import { platform } from "@tauri-apps/plugin-os";
 import { ConfigManager, SoberSettings } from "../config";
 import { Snowfall } from "../snowfall";
+import { showNotification } from "./ui";
 const currentPlatform = platform();
 const configManager = ConfigManager.getInstance();
 
@@ -153,15 +154,43 @@ export function setupSettingsUI() {
 
     const currentSober = configManager.get("sober");
 
+    if (
+      currentSober.discord_rpc_enabled &&
+      configManager.get("discordRpcEnabled")
+    ) {
+      configManager.set("discordRpcEnabled", false);
+      showNotification(
+        "Built-in Discord RPC disabled to prevent conflicts with Sober RPC.",
+      );
+    }
+
     soberKeys.forEach((key) => {
       const el = document.getElementById(`sober-${key}`) as HTMLInputElement;
       if (el) {
         el.checked = currentSober[key] as boolean;
         el.addEventListener("change", (e) => {
+          const isChecked = (e.target as HTMLInputElement).checked;
           const settings = configManager.get("sober");
           // @ts-ignore
-          settings[key] = (e.target as HTMLInputElement).checked;
+          settings[key] = isChecked;
           configManager.set("sober", settings);
+
+          if (key === "discord_rpc_enabled" && isChecked) {
+            const builtInRpcToggle = document.getElementById(
+              "discord-rpc-toggle",
+            ) as HTMLInputElement;
+
+            if (configManager.get("discordRpcEnabled")) {
+              configManager.set("discordRpcEnabled", false);
+              if (builtInRpcToggle) {
+                builtInRpcToggle.checked = false;
+                builtInRpcToggle.dispatchEvent(new Event("change"));
+              }
+              showNotification(
+                "Built-in Discord RPC disabled to prevent conflicts with Sober RPC.",
+              );
+            }
+          }
         });
       }
     });
