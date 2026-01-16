@@ -12,7 +12,7 @@ import { setupSwiftTunnelUI } from "./modules/integrations/swifttunnel";
   await initializeUI();
 
   setupFastFlagsUI();
-  setupSkyboxUI();
+  await setupSkyboxUI();
   setupLauncherUI();
   setupSettingsUI();
   setupSwiftTunnelUI();

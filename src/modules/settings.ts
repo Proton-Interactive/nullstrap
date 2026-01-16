@@ -128,7 +128,7 @@ export function setupSettingsUI() {
   if (currentPlatform === "macos") {
     const desc = document.getElementById("fps-unlock-desc");
     if (desc) {
-      desc.textContent += " ( Might not work on some macbooks with vsync )";
+      desc.textContent += " ( Might not work on some MacBooks with vSync )";
     }
   }
 

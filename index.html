@@ -86,7 +86,7 @@
                             margin-left: 28px;
                         "
                     >
-                        Unlock Framerate without FastFlags
+                        Unlock Fps without FastFlags
                     </p>
 
                     <div id="sober-section" style="display: none">
@@ -201,6 +201,19 @@
                         <option value="default">Default</option>
                         <option value="alya">Alya</option>
                     </select>
+                    <button
+                        id="btn-import-skybox"
+                        class="btn-footer"
+                        style="width: auto; margin-top: 10px"
+                    >
+                        Import Custom Skybox
+                    </button>
+                    <input
+                        type="file"
+                        id="file-import-skybox"
+                        accept=".zip"
+                        style="display: none"
+                    />
                 </div>
                 <div
                     id="tab-fast-flags"
@@ -270,8 +283,22 @@
                                 </div>
 
                                 <!-- DFIntTextureQualityOverride -->
+                                <div class="input-group">
+                                    <label>Quality Level (0-10)</label>
+                                    <input
+                                        type="number"
+                                        id="ff-roblox-DFIntTextureQualityOverride"
+                                    />
+                                </div>
 
                                 <!-- FIntDebugForceMSAASamples -->
+                                <div class="input-group">
+                                    <label>MSAA Samples (0, 2, 4, 8)</label>
+                                    <input
+                                        type="number"
+                                        id="ff-roblox-FIntDebugForceMSAASamples"
+                                    />
+                                </div>
 
                                 <!-- DFFlagDisableDPIScale -->
                                 <div class="setting-row">
@@ -316,14 +343,50 @@
                                     />
                                     <span>Prefer OpenGL</span>
                                 </div>
+                                <!-- FFlagDebugGraphicsPreferMetal -->
+                                <div class="setting-row">
+                                    <input
+                                        type="checkbox"
+                                        id="ff-roblox-FFlagDebugGraphicsPreferMetal"
+                                    />
+                                    <span>Prefer Metal (macOS)</span>
+                                </div>
                             </div>
 
                             <div>
                                 <h4>CSG & LOD</h4>
                                 <!-- DFIntCSGLevelOfDetailSwitchingDistance -->
+                                <div class="input-group">
+                                    <label>LOD Switching Dist</label>
+                                    <input
+                                        type="number"
+                                        id="ff-roblox-DFIntCSGLevelOfDetailSwitchingDistance"
+                                    />
+                                </div>
                                 <!-- DFIntCSGLevelOfDetailSwitchingDistanceL12 -->
+                                <div class="input-group">
+                                    <label>LOD Switching Dist L12</label>
+                                    <input
+                                        type="number"
+                                        id="ff-roblox-DFIntCSGLevelOfDetailSwitchingDistanceL12"
+                                    />
+                                </div>
                                 <!-- DFIntCSGLevelOfDetailSwitchingDistanceL23 -->
+                                <div class="input-group">
+                                    <label>LOD Switching Dist L23</label>
+                                    <input
+                                        type="number"
+                                        id="ff-roblox-DFIntCSGLevelOfDetailSwitchingDistanceL23"
+                                    />
+                                </div>
                                 <!-- DFIntCSGLevelOfDetailSwitchingDistanceL34 -->
+                                <div class="input-group">
+                                    <label>LOD Switching Dist L34</label>
+                                    <input
+                                        type="number"
+                                        id="ff-roblox-DFIntCSGLevelOfDetailSwitchingDistanceL34"
+                                    />
+                                </div>
 
                                 <h4>Environment & Debug</h4>
                                 <!-- FFlagDebugSkyGray -->
@@ -343,9 +406,37 @@
                                     <span>Pause Voxelizer</span>
                                 </div>
                                 <!-- DFIntDebugFRMQualityLevelOverride -->
+                                <div class="input-group">
+                                    <label>FRM Quality Level</label>
+                                    <input
+                                        type="number"
+                                        id="ff-roblox-DFIntDebugFRMQualityLevelOverride"
+                                    />
+                                </div>
                                 <!-- FIntFRMMaxGrassDistance -->
+                                <div class="input-group">
+                                    <label>Max Grass Dist</label>
+                                    <input
+                                        type="number"
+                                        id="ff-roblox-FIntFRMMaxGrassDistance"
+                                    />
+                                </div>
                                 <!-- FIntFRMMinGrassDistance -->
+                                <div class="input-group">
+                                    <label>Min Grass Dist</label>
+                                    <input
+                                        type="number"
+                                        id="ff-roblox-FIntFRMMinGrassDistance"
+                                    />
+                                </div>
                                 <!-- FIntGrassMovementReducedMotionFactor -->
+                                <div class="input-group">
+                                    <label>Grass Motion Factor</label>
+                                    <input
+                                        type="number"
+                                        id="ff-roblox-FIntGrassMovementReducedMotionFactor"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -380,8 +471,22 @@
                                 </div>
 
                                 <!-- DFIntTextureQualityOverride -->
+                                <div class="input-group">
+                                    <label>Quality Level (0-10)</label>
+                                    <input
+                                        type="number"
+                                        id="ff-studio-DFIntTextureQualityOverride"
+                                    />
+                                </div>
 
                                 <!-- FIntDebugForceMSAASamples -->
+                                <div class="input-group">
+                                    <label>MSAA Samples (0, 2, 4, 8)</label>
+                                    <input
+                                        type="number"
+                                        id="ff-studio-FIntDebugForceMSAASamples"
+                                    />
+                                </div>
 
                                 <!-- DFFlagDisableDPIScale -->
                                 <div class="setting-row">
@@ -468,9 +573,37 @@
                             <div>
                                 <h4>CSG & LOD</h4>
                                 <!-- DFIntCSGLevelOfDetailSwitchingDistance -->
+                                <div class="input-group">
+                                    <label>LOD Switching Dist</label>
+                                    <input
+                                        type="number"
+                                        id="ff-studio-DFIntCSGLevelOfDetailSwitchingDistance"
+                                    />
+                                </div>
                                 <!-- DFIntCSGLevelOfDetailSwitchingDistanceL12 -->
+                                <div class="input-group">
+                                    <label>LOD Switching Dist L12</label>
+                                    <input
+                                        type="number"
+                                        id="ff-studio-DFIntCSGLevelOfDetailSwitchingDistanceL12"
+                                    />
+                                </div>
                                 <!-- DFIntCSGLevelOfDetailSwitchingDistanceL23 -->
+                                <div class="input-group">
+                                    <label>LOD Switching Dist L23</label>
+                                    <input
+                                        type="number"
+                                        id="ff-studio-DFIntCSGLevelOfDetailSwitchingDistanceL23"
+                                    />
+                                </div>
                                 <!-- DFIntCSGLevelOfDetailSwitchingDistanceL34 -->
+                                <div class="input-group">
+                                    <label>LOD Switching Dist L34</label>
+                                    <input
+                                        type="number"
+                                        id="ff-studio-DFIntCSGLevelOfDetailSwitchingDistanceL34"
+                                    />
+                                </div>
 
                                 <h4>Environment & Debug</h4>
                                 <!-- FFlagDebugSkyGray -->
@@ -490,9 +623,37 @@
                                     <span>Pause Voxelizer</span>
                                 </div>
                                 <!-- DFIntDebugFRMQualityLevelOverride -->
+                                <div class="input-group">
+                                    <label>FRM Quality Level</label>
+                                    <input
+                                        type="number"
+                                        id="ff-studio-DFIntDebugFRMQualityLevelOverride"
+                                    />
+                                </div>
                                 <!-- FIntFRMMaxGrassDistance -->
+                                <div class="input-group">
+                                    <label>Max Grass Dist</label>
+                                    <input
+                                        type="number"
+                                        id="ff-studio-FIntFRMMaxGrassDistance"
+                                    />
+                                </div>
                                 <!-- FIntFRMMinGrassDistance -->
+                                <div class="input-group">
+                                    <label>Min Grass Dist</label>
+                                    <input
+                                        type="number"
+                                        id="ff-studio-FIntFRMMinGrassDistance"
+                                    />
+                                </div>
                                 <!-- FIntGrassMovementReducedMotionFactor -->
+                                <div class="input-group">
+                                    <label>Grass Motion Factor</label>
+                                    <input
+                                        type="number"
+                                        id="ff-studio-FIntGrassMovementReducedMotionFactor"
+                                    />
+                                </div>
 
                                 <h4>Debug & Physics</h4>
                                 <!-- DFFlagDebugDrawBroadPhaseAABBs -->

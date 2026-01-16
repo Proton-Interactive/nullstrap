@@ -113,6 +113,7 @@ const DEFAULT_CONFIG: AppConfig = {
     FIntFRMMinGrassDistance: 100,
     FFlagDebugGraphicsPreferVulkan: false,
     FFlagDebugGraphicsPreferOpenGL: false,
+    FFlagDebugGraphicsPreferMetal: false,
     FIntGrassMovementReducedMotionFactor: 5,
   },
   fastFlagsStudio: {

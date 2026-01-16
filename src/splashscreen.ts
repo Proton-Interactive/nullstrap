@@ -546,13 +546,56 @@ async function launchExecutable(
     let command: Command<string>;
 
     if (platform() === "macos") {
-      const appPath = await join(versionDir, appName);
-      const binaryName = appName.replace(".app", "");
-      const binaryPath = await join(appPath, "Contents", "MacOS", binaryName);
+      let appPath = await join(versionDir, appName);
+      let currentAppName = appName;
+
+      if (!(await exists(appPath))) {
+        console.warn(
+          `App not found at ${appPath}, searching version directory...`,
+        );
+        try {
+          const entries = await readDir(versionDir);
+          for (const entry of entries) {
+            if (entry.isDirectory && entry.name.endsWith(".app")) {
+              console.log(`Found alternative app: ${entry.name}`);
+              appPath = await join(versionDir, entry.name);
+              currentAppName = entry.name;
+              break;
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to scan version dir:", e);
+        }
+      }
+
+      let binaryName = currentAppName.replace(".app", "");
+      let binaryPath = await join(appPath, "Contents", "MacOS", binaryName);
 
       console.log("Setting permissions for:", appPath);
       const chmod = Command.create("chmod", ["-R", "755", appPath]);
       await chmod.execute();
+
+      if (!(await exists(binaryPath))) {
+        console.warn(
+          `Binary not found at ${binaryPath}, searching Contents/MacOS...`,
+        );
+        const macOsPath = await join(appPath, "Contents", "MacOS");
+        if (await exists(macOsPath)) {
+          try {
+            const entries = await readDir(macOsPath);
+            for (const entry of entries) {
+              if (entry.isFile && !entry.name.startsWith(".")) {
+                console.log(`Found alternative binary: ${entry.name}`);
+                binaryName = entry.name;
+                binaryPath = await join(macOsPath, entry.name);
+                break;
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to scan MacOS dir:", e);
+          }
+        }
+      }
 
       if (!(await exists(binaryPath))) {
         throw new Error(`Executable not found at ${binaryPath}`);

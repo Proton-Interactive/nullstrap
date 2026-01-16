@@ -20,11 +20,16 @@ export function setupFastFlagsUI() {
   const contentStudio = document.getElementById("ff-content-studio");
 
   // platform-specific ui tweaks
-  const metalRow = document
+  const metalRowStudio = document
     .getElementById("ff-studio-FFlagDebugGraphicsPreferMetal")
     ?.closest(".setting-row") as HTMLElement | null;
-  if (metalRow && currentPlatform !== "macos") {
-    metalRow.style.display = "none";
+  const metalRowRoblox = document
+    .getElementById("ff-roblox-FFlagDebugGraphicsPreferMetal")
+    ?.closest(".setting-row") as HTMLElement | null;
+
+  if (currentPlatform !== "macos") {
+    if (metalRowStudio) metalRowStudio.style.display = "none";
+    if (metalRowRoblox) metalRowRoblox.style.display = "none";
   }
 
   if (tabRoblox && tabStudio && contentRoblox && contentStudio) {
