@@ -145,7 +145,7 @@ export default function FastFlags({ registerSave, unregisterSave }: { registerSa
         if (savedJson) {
             setJsonInput(savedJson);
             try {
-                const parsed = JSON.parse(savedJson);
+                JSON.parse(savedJson);
             } catch {}
         }
     }, [subTab]);

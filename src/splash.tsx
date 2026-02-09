@@ -4,9 +4,7 @@ import { CssVarsProvider } from '@mui/joy/styles';
 import { theme as customTheme } from './theme';
 import Button from '@mui/joy/Button';
 import Stack from '@mui/joy/Stack';
-import { getCurrentWindow } from '@tauri-apps/api/window';
 import { invoke } from '@tauri-apps/api/core';
-import { getVersion } from '@tauri-apps/api/app';
 import { Titlebar } from './components/Titlebar';
 import './style.css';
 

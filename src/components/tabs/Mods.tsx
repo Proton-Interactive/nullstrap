@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 /// <reference types="vite/client" />
-import { Typography, Divider, Button, Stack, Alert, Select, Option, Box, List, ListItem, ListItemContent, Switch, Sheet } from '@mui/joy';
+import { Typography, Divider, Button, Stack, Alert, Select, Option, Box, List, ListItem, ListItemContent, Switch } from '@mui/joy';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { writeFile, mkdir, exists } from '@tauri-apps/plugin-fs';
@@ -48,9 +48,6 @@ export default function Mods() {
         setSoberSettings(prev => ({ ...prev, [key]: value }));
     };
 
-    const saveSoberSettings = async () => {
-    };
-    
     const [cleanLogs, setCleanLogs] = useState(true);
     const [cleanCache, setCleanCache] = useState(false);
 

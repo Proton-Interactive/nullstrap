@@ -52,8 +52,3 @@ export async function launchRoblox() {
         throw e;
     }
 }
-
-
-function unixPathSplit(path: string) {
-    return path.split('/');
-}

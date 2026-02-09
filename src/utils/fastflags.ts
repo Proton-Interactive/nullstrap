@@ -1,4 +1,4 @@
-import { appLocalDataDir, join, homeDir } from "@tauri-apps/api/path";
+import { join, homeDir } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api/core";
 import {
   exists,
