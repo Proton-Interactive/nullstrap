@@ -3,7 +3,7 @@ use sysinfo::System;
 use std::fs;
 use std::path::PathBuf;
 use std::time::{SystemTime, Duration};
-use std::io::{Cursor, Read};
+use std::io::Cursor;
 use reqwest;
 use zip::ZipArchive;
 use std::process::Command;
@@ -27,14 +27,6 @@ fn open_main_window(app: tauri::AppHandle) {
     if let Some(win) = app.get_webview_window("main") {
         println!("open_main_window: found existing 'main' window");
         
-        // do not hide splashscreen. the user requested splash to stay open.
-        /* 
-        if let Some(splash_win) = app.get_webview_window("splashscreen") {
-            let _ = splash_win.hide();
-            println!("open_main_window: hidden splashscreen");
-        }
-        */
-
         if win.is_minimized().unwrap_or(false) {
             let _ = win.unminimize();
             println!("open_main_window: unminimized the window");
@@ -59,13 +51,6 @@ fn open_main_window(app: tauri::AppHandle) {
     .build()
     {
         Ok(win) => {
-            // hide splashscreen
-            /*
-            if let Some(splash_win) = app.get_webview_window("splashscreen") {
-                let _ = splash_win.hide();
-            }
-            */
-
             let win_clone = win.clone();
             win.on_window_event(move |event| {
                 if let WindowEvent::CloseRequested { api, .. } = event {
@@ -89,7 +74,6 @@ fn open_main_window(app: tauri::AppHandle) {
     }
 }
 
-// apply square corners
 #[tauri::command]
 fn apply_square_corners(_window: tauri::WebviewWindow) {
     #[cfg(target_os = "windows")]
@@ -176,8 +160,6 @@ fn apply_skybox_texture(app: tauri::AppHandle, filename: String, data: Vec<u8>) 
     }
 }
 
-
-// save fast flags
 #[tauri::command]
 fn save_fast_flags(app: tauri::AppHandle, flags_json: String, mode: &str) -> Result<String, String> {
     save_fast_flags_internal(&app, flags_json, mode)
@@ -206,7 +188,6 @@ fn save_fast_flags_internal(app: &tauri::AppHandle, flags_json: String, mode: &s
             potential_paths.push(PathBuf::from(program_files).join("Roblox").join("Versions"));
         }
         
-        // Add Nullstrap managed versions
         if let Ok(data_dir) = app.path().app_local_data_dir() {
             potential_paths.push(data_dir.join("rblx-versions"));
         }
@@ -220,12 +201,10 @@ fn save_fast_flags_internal(app: &tauri::AppHandle, flags_json: String, mode: &s
                 continue;
             }
 
-            // Recursive search for RobloxPlayerBeta.exe or RobloxStudioBeta.exe
             if let Ok(entries) = fs::read_dir(&versions_path) {
                 for entry in entries.flatten() {
                     let path = entry.path();
                     if path.is_dir() {
-                         // Check for Player or Studio
                          let is_player = path.join("RobloxPlayerBeta.exe").exists();
                          let is_studio = path.join("RobloxStudioBeta.exe").exists();
                          
@@ -255,18 +234,15 @@ fn save_fast_flags_internal(app: &tauri::AppHandle, flags_json: String, mode: &s
         if saved_any {
             Ok(format!("Successfully saved Fast Flags to {} installation.", if mode == "studio" { "Roblox Studio" } else { "Roblox Player" }))
         } else {
-            // Return Ok even if not found to avoid noisy UI errors when only one component is installed
             Ok(format!("No {} installation found to patch.", if mode == "studio" { "Roblox Studio" } else { "Roblox Player" }))
         }
     }
 
     #[cfg(target_os = "macos")]
     {
-        // MacOS Logic
          let mut potential_paths = Vec::new();
          potential_paths.push(PathBuf::from("/Applications/Roblox.app"));
          
-         // Nullstrap managed
          if let Ok(data_dir) = app.path().app_local_data_dir() {
             potential_paths.push(data_dir.join("rblx-versions"));
          }
@@ -275,17 +251,14 @@ fn save_fast_flags_internal(app: &tauri::AppHandle, flags_json: String, mode: &s
         
         for versions_path in potential_paths {
              if mode == "studio" {
-                 // Not implementing standard Mac Studio path yet, focused on Player from user request
                  continue; 
              }
              
-             // If searching in rblx-versions, search recursively
              if versions_path.to_string_lossy().contains("rblx-versions") {
                  if let Ok(entries) = fs::read_dir(&versions_path) {
                     for entry in entries.flatten() {
                         let path = entry.path();
                         if path.is_dir() {
-                             // Check for RobloxPlayer.app
                              let app_path = path.join("RobloxPlayer.app");
                              if app_path.exists() {
                                  let settings_dir = app_path.join("Contents/ClientSettings");
@@ -301,10 +274,6 @@ fn save_fast_flags_internal(app: &tauri::AppHandle, flags_json: String, mode: &s
                     }
                  }
              } else {
-                 // Standard Application
-                 // User provided path: RobloxPlayer.app/Contents/ClientSettings/ClientAppSettings.json
-                 // But typically it's inside Applications/Roblox.app? 
-                 // Assuming user meant inside the .app bundle
                  let settings_dir = versions_path.join("Contents/ClientSettings");
                   if versions_path.exists() {
                         if !settings_dir.exists() {
@@ -328,30 +297,20 @@ fn save_fast_flags_internal(app: &tauri::AppHandle, flags_json: String, mode: &s
     #[cfg(target_os = "linux")]
     {
         use std::io::Write;
-        // Sober: ~/.var/app/org.vinegarhq.Sober/config/sober/config.json
-        // Vinegar: ~/.var/app/org.vinegarhq.Vinegar/config/vinegar/config.toml (Start)
 
         let home = dirs::home_dir().ok_or("Could not find home directory")?;
         
         if mode == "studio" {
-            // Vinegar
             let config_path = home.join(".var/app/org.vinegarhq.Vinegar/config/vinegar/config.toml");
             if !config_path.exists() {
                 return Err("Vinegar config not found".to_string());
             }
 
-            // Parse TOML
-            // We need to insert/update [fflags] table
-            // This is complex string manipulation if we don't want to deserialize everything.
-            // Using toml crate: Value
             let content = fs::read_to_string(&config_path).map_err(|e| e.to_string())?;
             let mut value: toml::Value = toml::from_str(&content).map_err(|e| e.to_string())?;
             
-            // Parse new flags from JSON
             let new_flags: std::collections::HashMap<String, serde_json::Value> = serde_json::from_str(&flags_json).map_err(|e| e.to_string())?;
 
-            // Convert serde Value to toml Value is tricky because types mismatch slightly (Numbers)
-            // But we can construct a toml::Table
             let mut overrides_table = toml::map::Map::new();
             for (k, v) in new_flags {
                 if let Some(b) = v.as_bool() {
@@ -365,8 +324,6 @@ fn save_fast_flags_internal(app: &tauri::AppHandle, flags_json: String, mode: &s
                 }
             }
             
-            // Assuming config.toml has `[fflags]`
-            // If `value` is a Table, check for "fflags"
             if let Some(table) = value.as_table_mut() {
                 table.insert("fflags".to_string(), toml::Value::Table(overrides_table));
             } else {
@@ -405,7 +362,6 @@ fn save_fast_flags_internal(app: &tauri::AppHandle, flags_json: String, mode: &s
              Ok("Saved Sober settings".to_string())
 
         } else {
-            // Sober FFlags (default for "roblox" mode on Linux)
             let config_path = home.join(".var/app/org.vinegarhq.Sober/config/sober/config.json");
             if !config_path.exists() {
                  return Err("Sober config not found".to_string());
@@ -440,17 +396,18 @@ fn is_roblox_running() -> bool {
     let mut system = System::new();
     system.refresh_processes();
 
-    let roblox_names = if cfg!(target_os = "windows") {
-        vec!["RobloxPlayerBeta.exe"]
-    } else if cfg!(target_os = "macos") {
-        vec!["RobloxPlayer"]
-    } else {
-        vec!["RobloxPlayer"]
-    };
+    let names = vec![
+        "RobloxPlayerBeta.exe",
+        "RobloxPlayer",
+        "RobloxStudioBeta.exe",
+        "RobloxStudio",
+        "RobloxPlayerBeta",
+        "RobloxStudioBeta"
+    ];
 
     for process in system.processes().values() {
         let name = process.name().to_lowercase();
-        for roblox_name in &roblox_names {
+        for roblox_name in &names {
             if name.contains(&roblox_name.to_lowercase()) {
                 return true;
             }
@@ -545,7 +502,6 @@ fn get_latest_version(binary_type: &str) -> Result<String, String> {
 
 #[tauri::command]
 fn fetch_all_flags(mode: &str) -> Result<serde_json::Value, String> {
-    // Determine URL based on mode
     let url = if mode == "studio" {
         "https://raw.githubusercontent.com/MaximumADHD/Roblox-FFlag-Tracker/main/PCStudioApp.json"
     } else {
@@ -584,10 +540,15 @@ fn show_progress_window(app: &tauri::AppHandle) {
 }
 
 fn download_and_install(app: &tauri::AppHandle, version: &str, binary_type: &str) -> Result<PathBuf, String> {
+    println!("[Downloader] Version: {}, Type: {}", version, binary_type);
+    if is_roblox_running() {
+        return Err("Roblox or Roblox Studio is currently running. Please close it before updating.".into());
+    }
+
     let data_dir = app.path().app_local_data_dir().map_err(|e| e.to_string())?;
     let versions_dir = data_dir.join("rblx-versions");
+    println!("[Downloader] Target Directory: {}", versions_dir.display());
     
-    // Cleanup old versions
     if versions_dir.exists() {
         if let Ok(entries) = fs::read_dir(&versions_dir) {
             for entry in entries.flatten() {
@@ -595,7 +556,20 @@ fn download_and_install(app: &tauri::AppHandle, version: &str, binary_type: &str
                  if path.is_dir() {
                      if let Some(dir_name) = path.file_name() {
                          if dir_name != version {
-                             let _ = fs::remove_dir_all(&path);
+                             let has_player = path.join("RobloxPlayerBeta.exe").exists() || path.join("RobloxPlayer.app").exists();
+                             let has_studio = path.join("RobloxStudioBeta.exe").exists() || path.join("RobloxStudio.app").exists();
+                             
+                             let is_studio = binary_type.contains("Studio");
+                             
+                             if is_studio {
+                                 if has_studio || (!has_player && !has_studio) {
+                                     let _ = fs::remove_dir_all(&path);
+                                 }
+                             } else {
+                                 if has_player || (!has_player && !has_studio) {
+                                     let _ = fs::remove_dir_all(&path);
+                                 }
+                             }
                          }
                      }
                  }
@@ -603,201 +577,17 @@ fn download_and_install(app: &tauri::AppHandle, version: &str, binary_type: &str
         }
     }
 
-    let exe_name = if binary_type == "WindowsStudio" { "RobloxStudioBeta.exe" } else { "RobloxPlayerBeta.exe" };
+    let exe_name = match binary_type {
+        "WindowsStudio" | "WindowsStudio64" => "RobloxStudioBeta.exe",
+        "WindowsPlayer" => "RobloxPlayerBeta.exe",
+        "MacStudio" => "RobloxStudio.app",
+        "MacPlayer" => "RobloxPlayer.app",
+        _ => "RobloxPlayerBeta.exe",
+    };
     let version_path = versions_dir.join(version);
     let exe_path = version_path.join(exe_name);
 
-    // Check for existing installation and validate structure
     if exe_path.exists() {
-        // Validate critical folders exist
-        let has_content = version_path.join("content").join("fonts").exists();
-        let has_ssl = version_path.join("ssl").exists();
-        
-        if has_content && has_ssl {
-            // Repair AppSettings.xml if missing instead of re-downloading
-            let settings_path = version_path.join("AppSettings.xml");
-            if !settings_path.exists() && binary_type == "WindowsPlayer" {
-                let settings_content = r#"<?xml version="1.0" encoding="UTF-8"?>
-<Settings>
-    <ContentFolder>content</ContentFolder>
-    <BaseUrl>http://www.roblox.com</BaseUrl>
-</Settings>"#;
-                let _ = fs::write(settings_path, settings_content);
-            }
-
-            // Return cleaned path
-            let path_str = exe_path.to_string_lossy().to_string();
-            if path_str.starts_with(r"\\?\") {
-                return Ok(PathBuf::from(&path_str[4..]));
-            }
-            return Ok(exe_path);
-        } else {
-            // missing components.
-            let _ = app.emit("progress-update", ProgressPayload { status: "Updating installation...".into(), percent: 0 });
-        }
-    }
-    
-    let _ = app.emit("progress-update", ProgressPayload { status: "Starting download...".into(), percent: 0 });
-
-    // Ensure directory exists
-    if !version_path.exists() {
-        let _ = fs::create_dir_all(&version_path);
-    }
-
-    // Download main package
-    let (zip_name, url_prefix) = match binary_type {
-        "WindowsStudio" => ("RobloxStudio.zip", "https://setup.rbxcdn.com"),
-        "WindowsPlayer" => ("RobloxApp.zip", "https://setup.rbxcdn.com"),
-        "MacStudio" => ("RobloxStudio.zip", "https://setup.rbxcdn.com/mac"),
-        "MacPlayer" => ("RobloxPlayer.zip", "https://setup.rbxcdn.com/mac"),
-        _ => ("RobloxApp.zip", "https://setup.rbxcdn.com"),
-    };
-    
-    let download_url = format!("{}/{}-{}", url_prefix, version, zip_name);
-    
-    let client = reqwest::blocking::Client::new();
-    let mut resp = client.get(&download_url).send().map_err(|e| e.to_string())?;
-    
-    if !resp.status().is_success() {
-        return Err(format!("Download failed: {}", resp.status()));
-    }
-    
-    let total_size = resp.content_length().unwrap_or(0);
-    let mut downloaded: u64 = 0;
-    let mut buffer = Vec::new();
-    let mut chunk = [0; 8192];
-
-    loop {
-        let bytes_read = resp.read(&mut chunk).map_err(|e| e.to_string())?;
-        if bytes_read == 0 {
-            break;
-        }
-        buffer.extend_from_slice(&chunk[..bytes_read]);
-        downloaded += bytes_read as u64;
-        
-        if total_size > 0 {
-             let percent = (downloaded * 100) / total_size;
-             if downloaded % (1024 * 1024) < 8192 {
-                 let _ = app.emit("progress-update", ProgressPayload { 
-                     status: format!("Downloading... {:.1} MB", downloaded as f64 / 1024.0 / 1024.0), 
-                     percent 
-                 });
-             }
-        }
-    }
-
-    let _ = app.emit("progress-update", ProgressPayload { status: "Extracting...".into(), percent: 100 });
-    
-    // Extract main package to version_path
-    let reader = Cursor::new(buffer);
-    let mut archive = ZipArchive::new(reader).map_err(|e| e.to_string())?;
-    for i in 0..archive.len() {
-        let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
-        let outpath = match file.enclosed_name() {
-            Some(path) => version_path.join(path),
-            None => continue,
-        };
-        if (*file.name()).ends_with('/') {
-            let _ = fs::create_dir_all(&outpath);
-        } else {
-            if let Some(p) = outpath.parent() { let _ = fs::create_dir_all(p); }
-            if let Ok(mut outfile) = fs::File::create(&outpath) {
-                let _ = std::io::copy(&mut file, &mut outfile);
-            }
-        }
-    }
-    
-    // Windows: Download and extract additional packages
-    #[cfg(target_os = "windows")]
-    if binary_type == "WindowsPlayer" {
-        let packages = vec![
-            "WebView2.zip", "ssl.zip", "shaders.zip", "content-fonts.zip",
-            "content-models.zip", "content-sky.zip", "content-sounds.zip",
-            "content-textures2.zip", "content-textures3.zip", "content-terrain.zip",
-            "content-configs.zip", "content-platform-fonts.zip",
-            "content-platform-dictionaries.zip", "content-avatar.zip",
-            "extracontent-places.zip", "extracontent-luapackages.zip",
-            "extracontent-translations.zip", "extracontent-models.zip",
-            "extracontent-textures.zip",
-        ];
-
-        for pkg in packages {
-            let label = pkg.replace(".zip", "");
-            let _ = app.emit("progress-update", ProgressPayload { 
-                status: format!("Downloading {}...", label).into(), 
-                percent: 0 
-            });
-
-            let pkg_url = format!("https://setup.rbxcdn.com/{}-{}", version, pkg);
-            if let Ok(resp) = client.get(&pkg_url).send() {
-                if resp.status().is_success() {
-                    if let Ok(content) = resp.bytes() {
-                        let reader = Cursor::new(content);
-                        if let Ok(mut archive) = ZipArchive::new(reader) {
-                            for i in 0..archive.len() {
-                                if let Ok(mut file) = archive.by_index(i) {
-                                    let name = file.name();
-                                    if name.ends_with('/') { continue; }
-                                    
-                                    let mut entry_path = PathBuf::from(name);
-                                    
-                                    // Flatten WebView2.zip
-                                    if pkg == "WebView2.zip" {
-                                        if let Some(first) = entry_path.components().next() {
-                                            if let std::path::Component::Normal(c) = first {
-                                                if c.to_string_lossy().to_lowercase() == "webview2" {
-                                                    entry_path = entry_path.iter().skip(1).collect();
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    // For content packages, we extract into subfolders
-                                    let target_dir = if pkg == "ssl.zip" {
-                                        version_path.join("ssl")
-                                    } else if pkg == "shaders.zip" {
-                                        version_path.join("shaders")
-                                    } else if pkg.starts_with("content-platform-") {
-                                        version_path.join("PlatformContent").join("pc").join(pkg.replace("content-platform-", "").replace(".zip", ""))
-                                    } else if pkg.starts_with("content-textures") {
-                                        version_path.join("content").join("textures")
-                                    } else if pkg.starts_with("content-") {
-                                        version_path.join("content").join(pkg.replace("content-", "").replace(".zip", ""))
-                                    } else if pkg.starts_with("extracontent-") {
-                                        version_path.join("ExtraContent").join(pkg.replace("extracontent-", "").replace(".zip", ""))
-                                    } else {
-                                        version_path.clone()
-                                    };
-
-                                    // Verify double-nesting: if entry_path starts with target_dir's leaf name, strip it
-                                    if let Some(target_leaf) = target_dir.file_name() {
-                                        if let Some(first) = entry_path.components().next() {
-                                            if let std::path::Component::Normal(c) = first {
-                                                if c.to_string_lossy().to_lowercase() == target_leaf.to_string_lossy().to_lowercase() {
-                                                    entry_path = entry_path.iter().skip(1).collect();
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    let outpath = target_dir.join(entry_path);
-                                    if let Some(p) = outpath.parent() { let _ = fs::create_dir_all(p); }
-                                    if let Ok(mut outfile) = fs::File::create(&outpath) {
-                                        let _ = std::io::copy(&mut file, &mut outfile);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Windows: Create critical files for launching
-    #[cfg(target_os = "windows")]
-    if binary_type == "WindowsPlayer" {
-        // AppSettings.xml is required for launching RobloxPlayerBeta.exe --app
         let settings_path = version_path.join("AppSettings.xml");
         if !settings_path.exists() {
             let settings_content = r#"<?xml version="1.0" encoding="UTF-8"?>
@@ -808,14 +598,241 @@ fn download_and_install(app: &tauri::AppHandle, version: &str, binary_type: &str
             let _ = fs::write(settings_path, settings_content);
         }
 
-        // ClientSettings folder for Fast Flags
-        let client_settings_path = version_path.join("ClientSettings");
-        if !client_settings_path.exists() {
-            let _ = fs::create_dir_all(client_settings_path);
+        let path_str = exe_path.to_string_lossy().to_string();
+        if path_str.starts_with(r"\\?\") {
+            return Ok(PathBuf::from(&path_str[4..]));
+        }
+        return Ok(exe_path);
+    }
+    
+    let _ = app.emit("progress-update", ProgressPayload { status: "Starting download...".into(), percent: 0 });
+
+    if !version_path.exists() {
+        let _ = fs::create_dir_all(&version_path);
+    }
+
+    let client = reqwest::blocking::Client::builder()
+        .user_agent("Roblox/WinInet")
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let url_prefix = match binary_type {
+        "MacStudio" | "MacPlayer" => "https://setup.rbxcdn.com/mac",
+        _ => "https://setup.rbxcdn.com",
+    };
+
+    let mut packages_to_download = Vec::new();
+
+    // Fetch manifests first to ensure Studio doesn't say "missing or corrupted"
+    for m_name in ["rbxPkgManifest.txt", "rbxManifest.txt"] {
+        let m_url = format!("{}/{}-{}", url_prefix, version, m_name);
+        println!("[Downloader] Syncing manifest: {}", m_name);
+        if let Ok(resp) = client.get(&m_url).send() {
+            if resp.status().is_success() {
+                if let Ok(content) = resp.bytes() {
+                    let _ = fs::write(version_path.join(m_name), &content);
+                    
+                    if m_name == "rbxPkgManifest.txt" {
+                        let text = String::from_utf8_lossy(&content);
+                        let lines: Vec<&str> = text.lines().collect();
+                        if !lines.is_empty() && lines[0] == "v0" {
+                            for i in (1..lines.len()).step_by(4) {
+                                if i < lines.len() {
+                                    packages_to_download.push(lines[i].to_string());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
-    // Set permissions and clean up path
+    // Fallback if manifest fetch failed
+    if packages_to_download.is_empty() {
+        #[cfg(target_os = "windows")]
+        {
+            let packages = if binary_type == "WindowsStudio" || binary_type == "WindowsStudio64" {
+                vec![
+                    "RobloxStudio.zip", "Libraries.zip", "LibrariesQt5.zip", "redist.zip",
+                    "ApplicationConfig.zip", "RibbonConfig.zip", "WebView2.zip",
+                    "shaders.zip", "ssl.zip",
+                    "content-avatar.zip", "content-configs.zip", "content-fonts.zip",
+                    "content-models.zip", "content-qt_translations.zip", "content-sky.zip",
+                    "content-sounds.zip", "content-textures2.zip", "content-textures3.zip",
+                    "content-studio_svg_textures.zip", "content-terrain.zip",
+                    "content-platform-fonts.zip", "content-platform-dictionaries.zip",
+                    "content-api-docs.zip", "extracontent-scripts.zip",
+                    "extracontent-luapackages.zip", "extracontent-translations.zip",
+                    "extracontent-models.zip", "extracontent-textures.zip",
+                    "studiocontent-models.zip", "studiocontent-textures.zip",
+                    "StudioFonts.zip", "BuiltInPlugins.zip", "BuiltInStandalonePlugins.zip",
+                    "Plugins.zip",
+                ]
+            } else {
+                vec![
+                    "RobloxApp.zip", "WebView2.zip", "ssl.zip", "shaders.zip",
+                    "content-fonts.zip", "content-models.zip", "content-sky.zip",
+                    "content-sounds.zip", "content-textures2.zip", "content-textures3.zip",
+                    "content-terrain.zip", "content-configs.zip", "content-platform-fonts.zip",
+                    "content-platform-dictionaries.zip", "content-avatar.zip",
+                    "extracontent-places.zip", "extracontent-luapackages.zip",
+                    "extracontent-translations.zip", "extracontent-models.zip",
+                    "extracontent-textures.zip",
+                ]
+            };
+            packages_to_download = packages.iter().map(|s| s.to_string()).collect();
+        }
+    }
+
+    for (idx, pkg) in packages_to_download.iter().enumerate() {
+        if pkg == "WebView2RuntimeInstaller.zip" { continue; }
+        
+        let label = pkg.replace(".zip", "");
+        let percent = ((idx + 1) * 100) / packages_to_download.len();
+        
+        println!("[Downloader] Processing package: {} ({}%)", pkg, percent);
+        
+        let _ = app.emit("progress-update", ProgressPayload { 
+            status: format!("Updating {}...", label).into(), 
+            percent: percent as u64 
+        });
+
+        let pkg_url = format!("{}/{}-{}", url_prefix, version, pkg);
+        let resp = match client.get(&pkg_url).send() { 
+            Ok(r) => {
+                if !r.status().is_success() {
+                    println!("[Downloader] Failed to download {}: Status {}", pkg, r.status());
+                    continue;
+                }
+                r
+            }, 
+            Err(e) => {
+                println!("[Downloader] Request error for {}: {}", pkg, e);
+                continue; 
+            } 
+        };
+        
+        let content = match resp.bytes() { 
+            Ok(b) => b, 
+            Err(e) => {
+                println!("[Downloader] Failed to read bytes for {}: {}", pkg, e);
+                continue; 
+            } 
+        };
+
+        println!("[Downloader] Extracting {} ({} bytes)...", pkg, content.len());
+        let reader = Cursor::new(content);
+        
+        let package_dir = match pkg.as_str() {
+            "RobloxStudio.zip" | "RobloxApp.zip" | "Libraries.zip" | "LibrariesQt5.zip" | "redist.zip" | "WebView2.zip" => "",
+            "shaders.zip" => "shaders",
+            "ssl.zip" => "ssl",
+            "content-avatar.zip" => "content/avatar",
+            "content-configs.zip" => "content/configs",
+            "content-fonts.zip" => "content/fonts",
+            "content-sky.zip" => "content/sky",
+            "content-sounds.zip" => "content/sounds",
+            "content-textures2.zip" => "content/textures",
+            "content-models.zip" => "content/models",
+            "content-textures3.zip" => "PlatformContent/pc/textures",
+            "content-terrain.zip" => "PlatformContent/pc/terrain",
+            "content-platform-fonts.zip" => "PlatformContent/pc/fonts",
+            "content-platform-dictionaries.zip" => "PlatformContent/pc/shared_compression_dictionaries",
+            "extracontent-luapackages.zip" => "ExtraContent/LuaPackages",
+            "extracontent-translations.zip" => "ExtraContent/translations",
+            "extracontent-models.zip" => "ExtraContent/models",
+            "extracontent-textures.zip" => "ExtraContent/textures",
+            "extracontent-places.zip" => "ExtraContent/places",
+            "content-studio_svg_textures.zip" => "content/studio_svg_textures",
+            "content-qt_translations.zip" => "content/qt_translations",
+            "content-api-docs.zip" => "content/api_docs",
+            "BuiltInPlugins.zip" => "BuiltInPlugins",
+            "BuiltInStandalonePlugins.zip" => "BuiltInStandalonePlugins",
+            "StudioFonts.zip" => "StudioFonts",
+            "ApplicationConfig.zip" => "ApplicationConfig",
+            "RibbonConfig.zip" => "RibbonConfig",
+            "Qml.zip" => "Qml",
+            "Plugins.zip" => "plugins",
+            _ => ""
+        };
+
+        if let Ok(mut archive) = ZipArchive::new(reader) {
+            for i in 0..archive.len() {
+                if let Ok(mut file) = archive.by_index(i) {
+                    let name = file.name();
+                    if name.ends_with('/') { continue; }
+                    
+                    let mut entry_path = PathBuf::from(name);
+                    
+                    if !package_dir.is_empty() {
+                        let pkg_dir_path = PathBuf::from(package_dir.replace('\\', "/"));
+                        if entry_path.starts_with(&pkg_dir_path) {
+                            if let Ok(remaining) = entry_path.strip_prefix(&pkg_dir_path) {
+                                entry_path = remaining.to_path_buf();
+                            }
+                        } else {
+                            if let Some(first_comp) = entry_path.components().next() {
+                                if let std::path::Component::Normal(c1) = first_comp {
+                                    if let Some(p_first_comp) = pkg_dir_path.components().next() {
+                                        if let std::path::Component::Normal(p1) = p_first_comp {
+                                            if c1.to_string_lossy().to_lowercase() == p1.to_string_lossy().to_lowercase() {
+                                                let entry_comps: Vec<_> = entry_path.components().collect();
+                                                let pkg_comps: Vec<_> = pkg_dir_path.components().collect();
+                                                let mut match_count = 0;
+                                                for (ec, pc) in entry_comps.iter().zip(pkg_comps.iter()) {
+                                                    if ec.as_os_str().to_string_lossy().to_lowercase() == pc.as_os_str().to_string_lossy().to_lowercase() {
+                                                        match_count += 1;
+                                                    } else { break; }
+                                                }
+                                                if match_count > 0 {
+                                                    entry_path = entry_comps.iter().skip(match_count).collect();
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if entry_path.as_os_str().is_empty() { continue; }
+                    
+                    let target_dir = version_path.join(package_dir);
+                    let outpath = target_dir.join(&entry_path);
+                    
+                    if let Some(p) = outpath.parent() { let _ = fs::create_dir_all(p); }
+                    
+                    if let Ok(mut outfile) = fs::File::create(&outpath) { 
+                        let _ = std::io::copy(&mut file, &mut outfile); 
+                    }
+                }
+            }
+        } else {
+            println!("[Downloader] Failed to open zip archive for {}", pkg);
+        }
+    }
+    
+    #[cfg(target_os = "windows")]
+    {
+        let settings_path = version_path.join("AppSettings.xml");
+        if !settings_path.exists() {
+            let settings_content = r#"<?xml version="1.0" encoding="UTF-8"?>
+<Settings>
+    <ContentFolder>content</ContentFolder>
+    <BaseUrl>http://www.roblox.com</BaseUrl>
+</Settings>"#;
+            let _ = fs::write(settings_path, settings_content);
+        }
+
+        if binary_type == "WindowsPlayer" {
+            let client_settings_path = version_path.join("ClientSettings");
+            if !client_settings_path.exists() {
+                let _ = fs::create_dir_all(client_settings_path);
+            }
+        }
+    }
+
     let mut final_path = exe_path;
     let path_str = final_path.to_string_lossy().to_string();
     if path_str.starts_with(r"\\?\") {
@@ -839,7 +856,6 @@ fn download_and_install(app: &tauri::AppHandle, version: &str, binary_type: &str
 
 
 fn install_mods(version_path: &PathBuf, flags_json: String, skybox_path: String) -> Result<(), String> {
-    // 1. Install Fast Flags
     if !flags_json.is_empty() && flags_json != "{}" {
         let client_settings = version_path.join("ClientSettings");
         if !client_settings.exists() {
@@ -848,7 +864,6 @@ fn install_mods(version_path: &PathBuf, flags_json: String, skybox_path: String)
         let _ = fs::write(client_settings.join("ClientAppSettings.json"), &flags_json);
     }
 
-    // 2. Install Skybox
     if !skybox_path.is_empty() {
         let sky_dir = version_path.join("PlatformContent").join("pc").join("textures").join("sky");
         if sky_dir.exists() {
@@ -898,7 +913,6 @@ async fn ensure_roblox_installed(app: tauri::AppHandle) -> Result<String, String
         path_str = path_str[4..].to_string();
     }
     
-    // Close progress window
     let _ = app.emit("progress-close", ());
     if let Some(win) = app.get_webview_window("progress") { let _ = win.close(); }
     
@@ -922,7 +936,6 @@ async fn launch_roblox_executable(path: String) -> Result<(), String> {
 
     let mut exe_path = PathBuf::from(&path);
     
-    // Strip UNC prefix (\\?\) if present, as it confuses some apps and shell commands
     let path_str = exe_path.to_string_lossy().to_string();
     if path_str.starts_with(r"\\?\") {
         exe_path = PathBuf::from(&path_str[4..]);
@@ -936,7 +949,6 @@ async fn launch_roblox_executable(path: String) -> Result<(), String> {
     {
         let version_dir = exe_path.parent().ok_or("Invalid path")?;
         
-        // Return to cmd /C start but with extremely robust quoting for 'start'
         let exe_str = exe_path.to_string_lossy();
         let dir_str = version_dir.to_string_lossy();
 
@@ -956,7 +968,6 @@ async fn launch_roblox_executable(path: String) -> Result<(), String> {
 
     #[cfg(target_os = "linux")]
     {
-        // On Linux, we assume 'path' might be a flatpak name or absolute path
         if path.contains("org.vinegarhq.Sober") {
              Command::new("flatpak")
                 .args(["run", "org.vinegarhq.Sober"])
@@ -994,11 +1005,9 @@ async fn launch_roblox(app: tauri::AppHandle, flags_json: String, skybox_path: S
 
                 let exe_str = exe_path.to_string_lossy().to_string();
                 
-                // Construct the command string again for safety in this scope
                 let version_dir = exe_path.parent().unwrap();
                 let dir_str = version_dir.to_string_lossy();
                 
-                // Use shell start for standard behavior
                 Command::new("cmd")
                     .args(["/C", "start", "", "/D", &dir_str, &exe_str, "--app"])
                     .spawn()
@@ -1033,7 +1042,6 @@ async fn launch_roblox(app: tauri::AppHandle, flags_json: String, skybox_path: S
             }
         })();
 
-        // Delay closing slightly so user sees "Launching..."
         std::thread::sleep(std::time::Duration::from_millis(1500));
         let _ = app_clone.emit("progress-close", ());
         if let Some(win) = app_clone.get_webview_window("progress") { let _ = win.close(); }
@@ -1054,9 +1062,10 @@ async fn launch_studio(app: tauri::AppHandle) -> Result<(), String> {
         let res = (|| -> Result<(), String> {
             #[cfg(target_os = "windows")]
             {
-                let version = get_latest_version("WindowsStudio")?;
+                let binary_type = "WindowsStudio64";
+                let version = get_latest_version(binary_type)?;
                 let _ = app_clone.emit("progress-update", ProgressPayload { status: "Verifying installation...".into(), percent: 0 });
-                let exe_path = download_and_install(&app_clone, &version, "WindowsStudio")?;
+                let exe_path = download_and_install(&app_clone, &version, binary_type)?;
                 
                 let _ = app_clone.emit("progress-update", ProgressPayload { status: "Launching Studio...".into(), percent: 100 });
                 
@@ -1067,11 +1076,11 @@ async fn launch_studio(app: tauri::AppHandle) -> Result<(), String> {
                     final_exe = PathBuf::from(&fe_str[4..]);
                 }
 
-                // Standard studio launch
-                std::process::Command::new(&final_exe)
-                    .current_dir(version_dir)
-                    .spawn()
-                    .map_err(|e| e.to_string())?;
+                let mut cmd = std::process::Command::new("cmd");
+                cmd.args(["/C", "start", "", "/D", &version_dir.to_string_lossy(), &final_exe.to_string_lossy()]);
+                
+                cmd.spawn()
+                   .map_err(|e| e.to_string())?;
                 
                 Ok(())
             }
@@ -1102,7 +1111,6 @@ async fn launch_studio(app: tauri::AppHandle) -> Result<(), String> {
             }
         })();
 
-        // Delay closing slightly so user sees valid status
         std::thread::sleep(std::time::Duration::from_millis(1500));
         let _ = app_clone.emit("progress-close", ());
         if let Some(win) = app_clone.get_webview_window("progress") { let _ = win.close(); }
@@ -1181,7 +1189,6 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             let _ = app.emit("single-instance", ()); 
 
-            // If main window exists and is visible (settings open), focus it
             if let Some(main_window) = app.get_webview_window("main") {
                  if main_window.is_visible().unwrap_or(false) {
                      let _ = main_window.set_focus();
@@ -1190,7 +1197,6 @@ pub fn run() {
                  }
             }
 
-            // Otherwise, show/focus splash screen (or recreate if missing)
              if let Some(splash) = app.get_webview_window("splashscreen") {
                 let _ = splash.show();
                 let _ = splash.set_focus();
@@ -1235,7 +1241,6 @@ pub fn run() {
             fetch_all_flags
         ])
         .setup(|app| {
-            // ensure main window is hidden on startup (overriding potential saved state)
             if let Some(win) = app.get_webview_window("main") {
                 let _ = win.hide();
                 let win_clone = win.clone();
@@ -1247,7 +1252,6 @@ pub fn run() {
                 });
             }
             
-            // Ensure splashscreen is visible
             if let Some(splash) = app.get_webview_window("splashscreen") {
                 let _ = splash.show();
                 let _ = splash.set_focus();
