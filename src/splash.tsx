@@ -185,7 +185,7 @@ export function LaunchStudio() {
         sx={renderButtonSx('108px')}
         onClick={() => {
           console.debug('LaunchStudio clicked');
-           invoke('launch_studio').catch(() => console.error('launch_studio failed'));
+           invoke('launch_studio').catch((err) => console.error('launch_studio failed:', err));
         }}
       >
         <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Studio</span>
@@ -196,12 +196,12 @@ export function LaunchStudio() {
 export function OpenSettings() {
   const handleClick = async () => {
     console.debug(
-      'Settings clicked - attempting to open main window via invoke'
+      'settings clicked - attempting to open main window via invoke'
     );
     try {
       await invoke('open_main_window');
     } catch (error) {
-      console.error('Failed to open main window via invoke:', error);
+      console.error('failed to open main window via invoke:', error);
     }
   };
 
@@ -244,7 +244,7 @@ function SplashApp() {
 
 const container = document.getElementById('root');
 if (!container) {
-  console.error('Could not find #root container for splash renderer');
+  console.error('could not find #root container for splash renderer');
 } else {
   document.body.classList.add('splash-window');
   document.body.style.backgroundImage = 'url(/src/assets/misa.png)';

@@ -387,7 +387,6 @@ export default function FastFlags({ registerSave, unregisterSave }: { registerSa
                             onChange={(e) => setJsonInput(e.target.value)}
                             sx={{ fontFamily: 'monospace', backgroundColor: 'rgba(0,0,0,0.2)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }} 
                         />
-                        {/* Save moved to footer */}
                     </Stack>
                     <Stack spacing={2}>
                          <Typography level="title-sm" sx={{ color: 'var(--text-primary)' }}>Active Overrides</Typography>
@@ -401,8 +400,6 @@ export default function FastFlags({ registerSave, unregisterSave }: { registerSa
                 </Box>
             )}
             
-            {/* Save moved to footer */}
-
              {status && !jsonMode && (
                 <Alert color={status.startsWith('Error') ? 'danger' : 'success'} sx={{ mt: 1, mb: 2 }}>
                     {status}

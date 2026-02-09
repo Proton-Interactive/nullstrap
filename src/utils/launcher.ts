@@ -24,13 +24,11 @@ export async function launchRoblox() {
         return;
       }
 
-      // Windows/Mac: Use unified Rust backend for installation/updates
       if (showNotifications) showNotification("verifying roblox...");
       const exePath = await invoke<string>("ensure_roblox_installed");
       
       console.log(`[Launcher] Roblox verified at: ${exePath}`);
 
-      // Apply mods now that we are sure the directory exists and is populated
       if (showNotifications) showNotification("applying mods...");
       
       try {
@@ -40,12 +38,10 @@ export async function launchRoblox() {
         console.warn("[Launcher] Mod application failed, but continuing launch:", modError);
       }
 
-      // Discord RPC
       if (configManager.get("discordRpcEnabled")) {
           setActivity("Launching Roblox", "Preparing to play");
       }
 
-      // Launch it!
       if (showNotifications) showNotification("launching roblox...");
       await invoke("launch_roblox_executable", { path: exePath });
 

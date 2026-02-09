@@ -46,7 +46,6 @@ function App() {
   const [snowfallEnabled, setSnowfallEnabled] = useState<boolean>(() => localStorage.getItem('snowfall') === 'true');
   const [rememberWindowSize, setRememberWindowSize] = useState<boolean>(() => localStorage.getItem('rememberWindowSize') === 'true');
   
-  // background state
   const [bgImage, setBgImage] = useState(() => localStorage.getItem('backgroundImage'));
   const [bgOpacity, setBgOpacity] = useState(() => parseFloat(localStorage.getItem('backgroundOpacity') || '0.1'));
   const [bgBlur, setBgBlur] = useState(() => parseInt(localStorage.getItem('backgroundBlur') || '0'));
@@ -104,15 +103,12 @@ function App() {
              return;
         }
         
-        // Check for web URL
         if (bgImage.startsWith('http://') || bgImage.startsWith('https://')) {
             if (active) setResolvedBgImage(bgImage);
             return;
         }
 
         try {
-            // Try reading as local file first to bypass asset protocol issues
-            // This requires fs:allow-read permission
             const data = await readFile(bgImage);
             
             const ext = bgImage.split('.').pop()?.toLowerCase();
@@ -202,7 +198,6 @@ function App() {
         setRememberWindowSize(e.newValue === 'true');
       }
       
-      // sync background settings from storage events
       if (e.key === 'backgroundImage') setBgImage(e.newValue);
       if (e.key === 'backgroundOpacity' && e.newValue) setBgOpacity(parseFloat(e.newValue));
       if (e.key === 'backgroundBlur' && e.newValue) setBgBlur(parseInt(e.newValue));
@@ -224,10 +219,8 @@ function App() {
 
     document.body.classList.add('main-window');
 
-    // clean up body style background if it exists from previous versions
     document.body.style.backgroundImage = '';
 
-    // apply saved window size if the user has enabled the preference
     try {
       const remember = localStorage.getItem('rememberWindowSize') === 'true';
       const raw = localStorage.getItem('savedWindowSize');
@@ -295,7 +288,7 @@ function App() {
                 backgroundSize: bgSize,
                 backgroundPosition: bgPosition,
                 backgroundRepeat: 'no-repeat',
-                transform: `rotate(${bgRotation}deg) scale(${bgRotation !== 0 ? 1.5 : 1})`, // Scale up if rotated to cover edges
+                transform: `rotate(${bgRotation}deg) scale(${bgRotation !== 0 ? 1.5 : 1})`,
                 opacity: bgOpacity,
                 filter: `blur(${bgBlur}px) brightness(${bgBrightness}%) contrast(${bgContrast}%) saturate(${bgSaturation}%)`,
                 zIndex: -1,

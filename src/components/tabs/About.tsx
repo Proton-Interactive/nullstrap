@@ -46,23 +46,70 @@ export default function About() {
                 ))}
             </Stack>
             <Divider className="content-divider" />
-            <Typography className="option-header" level="body-md" sx={{ color: 'var(--text-primary)', mt: 1, mb: 1 }}>Licenses</Typography>
-            <Typography level="body-md" sx={{ color: 'var(--text-primary)', mb: 1 }}>
-                This project is licensed under the MIT License.
+            <Typography className="option-header" level="body-md" sx={{ color: 'var(--text-primary)', mt: 1, mb: 1 }}>Project License</Typography>
+            <Typography level="body-md" sx={{ color: 'var(--text-primary)', mb: 2 }}>
+                This project is licensed under the <Link href="https://opensource.org/licenses/MIT" target="_blank" sx={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>MIT License</Link>.
             </Typography>
-             <Card variant="outlined" sx={{ bgcolor: 'transparent', borderColor: 'var(--border-color)', p: 2, maxHeight: '200px', overflow: 'auto' }}>
+
+            <Divider className="content-divider" />
+            <Typography className="option-header" level="body-md" sx={{ color: 'var(--text-primary)', mt: 1, mb: 1 }}>External Projects</Typography>
+            <Stack spacing={2} sx={{ mb: 4 }}>
+                <Typography level="body-sm" sx={{ color: 'var(--text-primary)', opacity: 0.7, mb: 0.5 }}>
+                    nullstrap is powered by several projects. Click any project to visit its website.
+                </Typography>
+                
+                {[
+                    { name: 'Sober', website: 'https://sober.vinegarhq.org/', license: 'GPLv3', desc: 'A standalone Roblox runtime for Linux, providing a high-performance environment.' },
+                    { name: 'Vinegar', website: 'https://vinegarhq.org/', license: 'GPLv3', desc: 'The primary tool for running Roblox Studio on Linux, focusing on stability and compatibility.' },
+                    { name: 'Flatpak', website: 'https://flatpak.org/', license: 'LGPL', desc: 'A system for building, distributing, and running sandboxed desktop applications on Linux.' },
+                    { name: 'Tauri', website: 'https://tauri.app/', license: 'MIT/Apache-2.0', desc: 'The framework used to build this application, enabling cross-platform desktop apps with web tech.' }
+                ].map((item) => (
+                    <Card 
+                        key={item.name}
+                        variant="outlined" 
+                        sx={{ 
+                            bgcolor: 'rgba(255, 255, 255, 0.02)', 
+                            borderColor: 'var(--border-color)', 
+                            p: 2,
+                            position: 'relative',
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                            '&:hover': { 
+                                bgcolor: 'var(--select-bg-hover)', 
+                                borderColor: 'var(--text-primary)',
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                            }
+                        }}
+                    >
+                        <Link href={item.website} target="_blank" overlay underline="none" sx={{ color: 'inherit' }}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                <Box>
+                                    <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 0.5 }}>
+                                        <Typography level="title-lg" sx={{ color: 'var(--text-primary)', fontWeight: 700 }}>{item.name}</Typography>
+                                        <Chip size="sm" variant="soft" color="primary" sx={{ borderRadius: '4px', bgcolor: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)' }}>{item.license}</Chip>
+                                    </Stack>
+                                    <Typography level="body-sm" sx={{ color: 'var(--text-primary)', opacity: 0.7 }}>{item.desc}</Typography>
+                                </Box>
+                            </Stack>
+                        </Link>
+                    </Card>
+                ))}
+            </Stack>
+
+            <Divider className="content-divider" />
+            <Typography className="option-header" level="body-md" sx={{ color: 'var(--text-primary)', mt: 1, mb: 1 }}>Internal Dependencies</Typography>
+             <Card variant="outlined" sx={{ bgcolor: 'transparent', borderColor: 'var(--border-color)', p: 2, maxHeight: '180px', overflow: 'auto' }}>
                 <Typography level="body-xs" sx={{ fontFamily: 'monospace', color: 'var(--text-primary)', opacity: 0.8, whiteSpace: 'pre-wrap' }}>
-{`Dependencies:
-- @tauri-apps/api: Apache-2.0 or MIT
+{`- @tauri-apps/api: Apache-2.0 or MIT
 - @tauri-apps/plugin-fs: Apache-2.0 or MIT
 - @tauri-apps/plugin-http: Apache-2.0 or MIT
 - @tauri-apps/plugin-opener: Apache-2.0 or MIT
 - @tauri-apps/plugin-os: Apache-2.0 or MIT
 - @tauri-apps/plugin-shell: Apache-2.0 or MIT
 - fflate: MIT
-- @tauri-apps/cli (dev): Apache-2.0 or MIT
-- typescript (dev): Apache-2.0
-- vite (dev): MIT`}
+- @mui/joy: MIT
+- framer-motion: MIT
+- lucide-react: ISC`}
                 </Typography>
             </Card>
         </Box>

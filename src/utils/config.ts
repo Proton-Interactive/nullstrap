@@ -51,13 +51,12 @@ export class ConfigManager {
     }
 
     private getDefault(key: string): any {
-        // Defaults based on legacy config.ts
         const defaults: Record<string, any> = {
             snowfallEnabled: false,
             openingAnimationEnabled: true,
             windowWidth: 800,
             windowHeight: 600,
-            currentSkybox: "Default", // Capitalized in legacy
+            currentSkybox: "Default",
             closeOnLaunch: true,
             minimizeOnLaunch: false,
             autoUpdate: true,
@@ -76,16 +75,13 @@ export class ConfigManager {
             }
         };
         
-        // Handle direct primitive mappings if possible
         if (defaults[key] !== undefined) return defaults[key];
         
-        // Fallback for some keys that might be boolean strings in localStorage
         if (key === 'discordRpcEnabled') return false;
         
         return null;
     }
     
     public saveConfig() {
-        // LocalStorage is auto-saved
     }
 }

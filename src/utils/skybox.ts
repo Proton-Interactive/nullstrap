@@ -22,7 +22,7 @@ const skyboxTextures = import.meta.glob(
 export async function applySkyboxToDisk() {
   const currentPlatform = platform();
   console.log(`[Skybox] Applying skybox for ${currentPlatform}`);
-  if (currentPlatform === "linux") return; // Not supported on Sober
+  if (currentPlatform === "linux") return;
 
   let selected = configManager.get("currentSkybox");
   if (!selected) selected = "default";
@@ -75,7 +75,6 @@ export async function applySkyboxToDisk() {
       }
 
       if (data) {
-        // Use Rust backend to write file to Roblox folders (bypasses permissions)
         await invoke("apply_skybox_texture", { 
           filename, 
           data: Array.from(data) 

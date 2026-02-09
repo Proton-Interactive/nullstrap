@@ -11,7 +11,6 @@ import { ConfigManager } from "./config";
 
 const configManager = ConfigManager.getInstance();
 
-// Helper to process flags (boolean to "True"/"False", etc)
 function processFlags(flags: any): Record<string, string> {
   const processed: Record<string, string> = {};
   if (!flags) return processed;
@@ -32,7 +31,6 @@ export async function saveFastFlagsToDisk() {
   const flagsRoblox = processFlags(configManager.get("fastFlags"));
   const flagsStudio = processFlags(configManager.get("fastFlagsStudio"));
 
-  // linux (sober) logic
   if (currentPlatform === "linux") {
     const home = await homeDir();
     const configPath = await join(
@@ -72,7 +70,6 @@ export async function saveFastFlagsToDisk() {
     await writeTextFile(configPath, JSON.stringify(config, null, 2));
 
   } else {
-    // windows / macos logic: use backend invoke for reliability and permissions
     try {
       await invoke("save_fast_flags", { 
         flagsJson: JSON.stringify(flagsRoblox), 
@@ -88,7 +85,6 @@ export async function saveFastFlagsToDisk() {
         mode: "studio" 
       });
     } catch (e) {
-      // Don't warn for studio, it's often not installed
       console.log("No Studio installation to apply flags to.");
     }
   }

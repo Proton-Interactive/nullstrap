@@ -37,17 +37,17 @@ export function Titlebar({ showTitle = true }: TitlebarProps) {
         try {
           const s = await w.innerSize();
           localStorage.setItem('savedWindowSize', JSON.stringify({ width: s.width, height: s.height }));
-          console.debug('Titlebar: saved window size before hide');
+          console.debug('titlebar: saved window size before hide');
         } catch (saveErr) {
-          console.warn('Titlebar: failed to save window size', saveErr);
+          console.warn('titlebar: failed to save window size', saveErr);
         }
       }
 
       try {
         await w.hide();
-        console.debug('Titlebar: window hidden');
+        console.debug('titlebar: window hidden');
       } catch (hideErr) {
-        console.warn('Titlebar: hide() failed, attempting close()', hideErr);
+        console.warn('titlebar: hide() failed, attempting close()', hideErr);
         try {
           await w.close();
         } catch (closeErr) {

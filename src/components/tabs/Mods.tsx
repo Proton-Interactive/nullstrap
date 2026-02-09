@@ -20,7 +20,7 @@ export default function Mods() {
     const [loading, setLoading] = useState(false);
     const [osType, setOsType] = useState<string>('windows');
     
-    // Sober Settings
+    // sober settings
     const [soberSettings, setSoberSettings] = useState<Record<string, any>>({
         allow_gamepad_permission: false,
         close_on_leave: true,
@@ -46,24 +46,9 @@ export default function Mods() {
 
     const updateSoberSetting = (key: string, value: any) => {
         setSoberSettings(prev => ({ ...prev, [key]: value }));
-        // In real app, we should load existing settings first and save on change
-        // For now, we can piggyback on save_fast_flags logic or create save_sober logic?
-        // User implied "save config" logic.
-        // We will invoke save_fast_flags with just these settings as "fast flags" to the 'sober' path? 
-        // No, save_fast_flags writes to fflags inside config.json.
-        // We need a way to write top level keys to config.json.
-        // save_fast_flags for linux handles "fflags" key. 
-        // I need to add proper save support for Sober settings.
     };
 
     const saveSoberSettings = async () => {
-        // We can pass the settings JSON to invoke('save_fast_flags') but abuse the mode?
-        // Or better, add a new command.
-        // For simplicity given constraints, I'll reuse 'save_fast_flags' but add a special "sober_config" mode? 
-        // No, 'save_fast_flags' expects json string.
-        // Let's assume for now we leave it UI only or implement 'save_sober_config' later.
-        // But user wants it working.
-        // I'll manually modify save_fast_flags in Rust to handle "sober_global" mode if I can.
     };
     
     const [cleanLogs, setCleanLogs] = useState(true);
