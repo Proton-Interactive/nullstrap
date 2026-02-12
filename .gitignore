@@ -1,0 +1,48 @@
+# Node.js
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Logs
+logs/
+*.log
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Tauri / Rust
+src-tauri/target/
+src-tauri/gen/
+src-tauri/binaries/
+target/
+**/*.rs.bk
+Cargo.lock
+
+# App Data (Managed versions/configs)
+src-tauri/rblx-versions/
+src-tauri/custom-skybox/
+
+# Environment
+.env
+.env*.local
+
+# OS
+Thumbs.db
+[Bb]in/
+[Oo]bj/
+
+# Legacy
+/nullstrap-legacy/

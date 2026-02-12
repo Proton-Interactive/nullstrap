@@ -1,0 +1,60 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window and splashscreen",
+  "windows": ["main", "splashscreen", "progress"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "core:window:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-minimize",
+    "core:window:allow-close",
+    "core:window:allow-maximize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-set-size",
+    "core:webview:allow-internal-toggle-devtools",
+    "shell:default",
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        { "name": "cmd", "cmd": "cmd", "args": true, "sidecar": false },
+        { "name": "open", "cmd": "open", "args": true, "sidecar": false },
+        { "name": "chmod", "cmd": "chmod", "args": true, "sidecar": false },
+        { "name": "flatpak", "cmd": "flatpak", "args": true, "sidecar": false }
+      ]
+    },
+    "shell:allow-open",
+    "dialog:default",
+    "fs:default",
+    "os:default",
+    {
+      "identifier": "http:default",
+      "allow": [{ "url": "https://**" }, { "url": "http://**" }]
+    },
+    {
+      "identifier": "fs:allow-read-file",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-remove",
+      "allow": [{ "path": "**" }]
+    }
+  ]
+}
