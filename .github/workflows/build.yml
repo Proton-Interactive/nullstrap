@@ -76,32 +76,40 @@ jobs:
             src-tauri/target/release/*.exe
           if-no-files-found: warn
 
-      - name: Upload release assets to GitHub Release
-        if: github.event_name == 'release'
+      - name: Upload release assets to GitHub Release (Windows)
+        if: github.event_name == 'release' && startsWith(matrix.platform, 'windows')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UPLOAD_URL: ${{ github.event.release.upload_url }}
+        shell: pwsh
         run: |
-          echo "Uploading release assets from src-tauri/target/release/bundle"
-          # Windows runners use PowerShell; ensure we use PowerShell upload there
-          if [[ "${{ matrix.platform }}" == "windows"* ]] || [[ "${{ matrix.platform }}" == "windows-latest" ]]; then
-            powershell -NoProfile -Command "\
-              $files = Get-ChildItem -Path 'src-tauri\\target\\release\\bundle' -File -Recurse -ErrorAction SilentlyContinue; \
-              if ($files) { \
-                foreach ($f in $files) { \
-                  Write-Host 'Uploading' $f.FullName; \
-                  Invoke-RestMethod -Method Post -Uri \"${UPLOAD_URL}?name=$($f.Name)\" -Headers @{ Authorization = \"token $env:GITHUB_TOKEN\" } -InFile $f.FullName -ContentType 'application/octet-stream'; \
-                } \
-              } else { Write-Host 'No bundle files found' }
-            "
+          Write-Host "Uploading release assets from src-tauri/target/release/bundle (Windows)"
+          $uploadUrl = "${env:UPLOAD_URL}" -replace '\{\?name,label\}',''
+          $files = Get-ChildItem -Path 'src-tauri\target\release\bundle' -File -Recurse -ErrorAction SilentlyContinue
+          if ($files) {
+            foreach ($f in $files) {
+              Write-Host "Uploading" $f.FullName
+              Invoke-RestMethod -Method Post -Uri "$uploadUrl?name=$($f.Name)" -Headers @{ Authorization = "token $env:GITHUB_TOKEN" } -InFile $f.FullName -ContentType 'application/octet-stream'
+            }
+          } else {
+            Write-Host "No bundle files found"
+          }
+
+      - name: Upload release assets to GitHub Release (Unix)
+        if: github.event_name == 'release' && !startsWith(matrix.platform, 'windows')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPLOAD_URL: ${{ github.event.release.upload_url }}
+        shell: bash
+        run: |
+          echo "Uploading release assets from src-tauri/target/release/bundle (Unix)"
+          if [ -d src-tauri/target/release/bundle ]; then
+            upload_url="${UPLOAD_URL%\{*}"
+            for file in $(find src-tauri/target/release/bundle -type f); do
+              echo "Uploading $file"
+              name=$(basename "$file")
+              curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" --data-binary @"$file" "${upload_url}?name=$name"
+            done
           else
-            if [ -d src-tauri/target/release/bundle ]; then
-              for file in $(find src-tauri/target/release/bundle -type f); do
-                echo "Uploading $file"
-                name=$(basename "$file")
-                curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" --data-binary @"$file" "${UPLOAD_URL}?name=$name"
-              done
-            else
-              echo "No bundle directory found"
-            fi
+            echo "No bundle directory found"
           fi
