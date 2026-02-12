@@ -11,7 +11,7 @@ import { showNotification } from "./ui";
 const configManager = ConfigManager.getInstance();
 
 const skyboxTextures = import.meta.glob(
-  "/src/assets/skyboxes*.{png,jpg,jpeg,tex}",
+  "/src/assets/skyboxes/**/*.{png,jpg,jpeg,tex}",
   {
     query: "?url",
     import: "default",

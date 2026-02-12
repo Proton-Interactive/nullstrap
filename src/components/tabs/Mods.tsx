@@ -7,7 +7,7 @@ import { writeFile, mkdir, exists } from '@tauri-apps/plugin-fs';
 import { appLocalDataDir, join } from '@tauri-apps/api/path';
 import { type as getOsType } from '@tauri-apps/plugin-os';
 
-const SKYBOX_ASSETS = import.meta.glob('/src/assets/skyboxes*.{tex,png,jpg}', {
+const SKYBOX_ASSETS = import.meta.glob('/src/assets/skyboxes/**/*. {tex,png,jpg}', {
     query: '?url',
     import: 'default',
     eager: true
