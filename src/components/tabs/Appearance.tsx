@@ -71,7 +71,7 @@ export default function Appearance({
     return (
     <>
     <Divider className="content-divider" />
-        <List>
+        <List sx={{ mt: 2, bgcolor: 'transparent' }}>
             <ListItem>
                 <ListItemContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Typography level="body-md" className="option-header" sx={{ color: 'var(--text-primary)' }}>Theme</Typography>
@@ -93,7 +93,7 @@ export default function Appearance({
                 
                 <Divider className="content-divider" style={{ marginTop: 8 }} />
                 
-                <ListItem>
+                <ListItem sx={{ bgcolor: 'transparent' }}>
                      <Typography level="body-md" className="option-header" marginTop={"5px"} sx={{ color: 'var(--text-primary)' }}>Appearance</Typography>
                 </ListItem>
 
@@ -159,7 +159,7 @@ export default function Appearance({
                             )}
                         </Stack>
                         
-                        <Stack spacing={2} sx={{ mt: 1, p: 2, border: '1px solid var(--border-color)', borderRadius: 'md' }}>
+                        <Stack spacing={2} sx={{ mt: 1, p: 2, border: '1px solid var(--border-color)', borderRadius: 'md', bgcolor: 'transparent' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Typography level="body-xs" sx={{ color: 'var(--text-primary)' }}>Enable in Splash Screen</Typography>
                                 <Switch 

@@ -16,8 +16,6 @@ import Appearance from './components/tabs/Appearance';
 import About from './components/tabs/About';
 import { launchRoblox } from './utils/launcher';
 
-
-
 function initLayout(): void {
   try {
     document.body.style.margin = '0';
@@ -42,26 +40,52 @@ function initLayout(): void {
 
 function App() {
   const [activeTab, setActiveTab] = useState('Integrations');
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'system');
-  const [snowfallEnabled, setSnowfallEnabled] = useState<boolean>(() => localStorage.getItem('snowfall') === 'true');
-  const [rememberWindowSize, setRememberWindowSize] = useState<boolean>(() => localStorage.getItem('rememberWindowSize') === 'true');
-  
-  const [bgImage, setBgImage] = useState(() => localStorage.getItem('backgroundImage'));
-  const [bgOpacity, setBgOpacity] = useState(() => parseFloat(localStorage.getItem('backgroundOpacity') || '0.1'));
-  const [bgBlur, setBgBlur] = useState(() => parseInt(localStorage.getItem('backgroundBlur') || '0'));
-  const [bgBrightness, setBgBrightness] = useState(() => parseInt(localStorage.getItem('backgroundBrightness') || '100'));
-  const [bgContrast, setBgContrast] = useState(() => parseInt(localStorage.getItem('backgroundContrast') || '100'));
-  const [bgSaturation, setBgSaturation] = useState(() => parseInt(localStorage.getItem('backgroundSaturation') || '100'));
-  const [bgSize, setBgSize] = useState(() => localStorage.getItem('backgroundSize') || 'cover');
-  const [bgPosition, setBgPosition] = useState(() => localStorage.getItem('backgroundPosition') || 'center');
-  const [bgRotation, setBgRotation] = useState(() => parseInt(localStorage.getItem('backgroundRotation') || '0'));
-  
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem('theme') || 'system'
+  );
+  const [snowfallEnabled, setSnowfallEnabled] = useState<boolean>(
+    () => localStorage.getItem('snowfall') === 'true'
+  );
+  const [rememberWindowSize, setRememberWindowSize] = useState<boolean>(
+    () => localStorage.getItem('rememberWindowSize') === 'true'
+  );
+
+  const [bgImage, setBgImage] = useState(() =>
+    localStorage.getItem('backgroundImage')
+  );
+  const [bgOpacity, setBgOpacity] = useState(() =>
+    parseFloat(localStorage.getItem('backgroundOpacity') || '0.1')
+  );
+  const [bgBlur, setBgBlur] = useState(() =>
+    parseInt(localStorage.getItem('backgroundBlur') || '0')
+  );
+  const [bgBrightness, setBgBrightness] = useState(() =>
+    parseInt(localStorage.getItem('backgroundBrightness') || '100')
+  );
+  const [bgContrast, setBgContrast] = useState(() =>
+    parseInt(localStorage.getItem('backgroundContrast') || '100')
+  );
+  const [bgSaturation, setBgSaturation] = useState(() =>
+    parseInt(localStorage.getItem('backgroundSaturation') || '100')
+  );
+  const [bgSize, setBgSize] = useState(
+    () => localStorage.getItem('backgroundSize') || 'cover'
+  );
+  const [bgPosition, setBgPosition] = useState(
+    () => localStorage.getItem('backgroundPosition') || 'center'
+  );
+  const [bgRotation, setBgRotation] = useState(() =>
+    parseInt(localStorage.getItem('backgroundRotation') || '0')
+  );
+
   const [resolvedBgImage, setResolvedBgImage] = useState<string | null>(null);
 
-  const [saveHandler, setSaveHandler] = useState<(() => void | Promise<void>) | null>(null);
+  const [saveHandler, setSaveHandler] = useState<
+    (() => void | Promise<void>) | null
+  >(null);
 
   const registerSave = useCallback((handler: () => void | Promise<void>) => {
-      setSaveHandler(() => handler);
+    setSaveHandler(() => handler);
   }, []);
 
   const unregisterSave = useCallback(() => {
@@ -69,28 +93,28 @@ function App() {
   }, []);
 
   const handleLaunch = async () => {
-      try {
-          await launchRoblox();
-      } catch (e) {
-          console.error("Failed to launch:", e);
-      }
+    try {
+      await launchRoblox();
+    } catch (e) {
+      console.error('Failed to launch:', e);
+    }
   };
 
   const handleSave = async () => {
-      if (saveHandler) {
-          await saveHandler();
-      }
+    if (saveHandler) {
+      await saveHandler();
+    }
   };
 
   const handleSaveAndLaunch = async () => {
-      if (saveHandler) {
-          await saveHandler();
-      }
-      await handleLaunch();
+    if (saveHandler) {
+      await saveHandler();
+    }
+    await handleLaunch();
   };
 
   const handleClose = () => {
-      getCurrentWindow().close();
+    getCurrentWindow().close();
   };
 
   useEffect(() => {
@@ -98,40 +122,43 @@ function App() {
     let active = true;
 
     const loadBg = async () => {
-        if (!bgImage) {
-             if (active) setResolvedBgImage(null);
-             return;
-        }
-        
-        if (bgImage.startsWith('http://') || bgImage.startsWith('https://')) {
-            if (active) setResolvedBgImage(bgImage);
-            return;
-        }
+      if (!bgImage) {
+        if (active) setResolvedBgImage(null);
+        return;
+      }
 
-        try {
-            const data = await readFile(bgImage);
-            
-            const ext = bgImage.split('.').pop()?.toLowerCase();
-            let mime = 'image/jpeg';
-            if (ext === 'png') mime = 'image/png';
-            if (ext === 'gif') mime = 'image/gif';
-            if (ext === 'webp') mime = 'image/webp';
-            
-            const blob = new Blob([data], { type: mime });
-            const url = URL.createObjectURL(blob);
-            urlToRevoke = url;
-            if (active) setResolvedBgImage(url);
-        } catch (e) {
-            console.warn("Direct file read failed, falling back to convertFileSrc:", e);
-            if (active) setResolvedBgImage(convertFileSrc(bgImage));
-        }
+      if (bgImage.startsWith('http://') || bgImage.startsWith('https://')) {
+        if (active) setResolvedBgImage(bgImage);
+        return;
+      }
+
+      try {
+        const data = await readFile(bgImage);
+
+        const ext = bgImage.split('.').pop()?.toLowerCase();
+        let mime = 'image/jpeg';
+        if (ext === 'png') mime = 'image/png';
+        if (ext === 'gif') mime = 'image/gif';
+        if (ext === 'webp') mime = 'image/webp';
+
+        const blob = new Blob([data], { type: mime });
+        const url = URL.createObjectURL(blob);
+        urlToRevoke = url;
+        if (active) setResolvedBgImage(url);
+      } catch (e) {
+        console.warn(
+          'Direct file read failed, falling back to convertFileSrc:',
+          e
+        );
+        if (active) setResolvedBgImage(convertFileSrc(bgImage));
+      }
     };
 
     loadBg();
 
     return () => {
-        active = false;
-        if (urlToRevoke) URL.revokeObjectURL(urlToRevoke);
+      active = false;
+      if (urlToRevoke) URL.revokeObjectURL(urlToRevoke);
     };
   }, [bgImage]);
 
@@ -152,7 +179,10 @@ function App() {
       if (v) {
         const w = getCurrentWindow();
         const s = await w.innerSize();
-        localStorage.setItem('savedWindowSize', JSON.stringify({ width: s.width, height: s.height }));
+        localStorage.setItem(
+          'savedWindowSize',
+          JSON.stringify({ width: s.width, height: s.height })
+        );
       } else {
         localStorage.removeItem('savedWindowSize');
       }
@@ -169,7 +199,9 @@ function App() {
     const applyTheme = (t: string) => {
       const root = document.documentElement;
       if (t === 'system') {
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const systemDark = window.matchMedia(
+          '(prefers-color-scheme: dark)'
+        ).matches;
         root.setAttribute('data-theme', systemDark ? 'dark' : 'light');
       } else {
         root.setAttribute('data-theme', t);
@@ -197,16 +229,23 @@ function App() {
       if (e.key === 'rememberWindowSize' && e.newValue) {
         setRememberWindowSize(e.newValue === 'true');
       }
-      
+
       if (e.key === 'backgroundImage') setBgImage(e.newValue);
-      if (e.key === 'backgroundOpacity' && e.newValue) setBgOpacity(parseFloat(e.newValue));
-      if (e.key === 'backgroundBlur' && e.newValue) setBgBlur(parseInt(e.newValue));
-      if (e.key === 'backgroundBrightness' && e.newValue) setBgBrightness(parseInt(e.newValue));
-      if (e.key === 'backgroundContrast' && e.newValue) setBgContrast(parseInt(e.newValue));
-      if (e.key === 'backgroundSaturation' && e.newValue) setBgSaturation(parseInt(e.newValue));
+      if (e.key === 'backgroundOpacity' && e.newValue)
+        setBgOpacity(parseFloat(e.newValue));
+      if (e.key === 'backgroundBlur' && e.newValue)
+        setBgBlur(parseInt(e.newValue));
+      if (e.key === 'backgroundBrightness' && e.newValue)
+        setBgBrightness(parseInt(e.newValue));
+      if (e.key === 'backgroundContrast' && e.newValue)
+        setBgContrast(parseInt(e.newValue));
+      if (e.key === 'backgroundSaturation' && e.newValue)
+        setBgSaturation(parseInt(e.newValue));
       if (e.key === 'backgroundSize' && e.newValue) setBgSize(e.newValue);
-      if (e.key === 'backgroundPosition' && e.newValue) setBgPosition(e.newValue);
-      if (e.key === 'backgroundRotation' && e.newValue) setBgRotation(parseInt(e.newValue));
+      if (e.key === 'backgroundPosition' && e.newValue)
+        setBgPosition(e.newValue);
+      if (e.key === 'backgroundRotation' && e.newValue)
+        setBgRotation(parseInt(e.newValue));
     };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
@@ -228,7 +267,11 @@ function App() {
         try {
           const parsed = JSON.parse(raw);
           const w = getCurrentWindow();
-          if (parsed && typeof parsed.width === 'number' && typeof parsed.height === 'number') {
+          if (
+            parsed &&
+            typeof parsed.width === 'number' &&
+            typeof parsed.height === 'number'
+          ) {
             w.setSize(new LogicalSize(parsed.width, parsed.height));
             console.debug('applied saved window size', parsed);
           }
@@ -246,26 +289,69 @@ function App() {
       case 'Mods':
         return <Mods />;
       case 'FastFlags':
-        return <FastFlags registerSave={registerSave} unregisterSave={unregisterSave} />;
+        return (
+          <FastFlags
+            registerSave={registerSave}
+            unregisterSave={unregisterSave}
+          />
+        );
       case 'Appearance':
-        return <Appearance 
-          theme={theme} 
-          setTheme={setTheme} 
-          snowEnabled={snowfallEnabled} 
-          setSnowEnabled={handleSetSnowfallEnabled} 
-          rememberWindowSize={rememberWindowSize} 
-          setRememberWindowSize={handleSetRememberWindowSize}
-          
-          bgImage={bgImage} setBgImage={(v) => { setBgImage(v); if(v) localStorage.setItem('backgroundImage', v); else localStorage.removeItem('backgroundImage'); }}
-          bgOpacity={bgOpacity} setBgOpacity={(v) => { setBgOpacity(v); localStorage.setItem('backgroundOpacity', String(v)); }}
-          bgBlur={bgBlur} setBgBlur={(v) => { setBgBlur(v); localStorage.setItem('backgroundBlur', String(v)); }}
-          bgBrightness={bgBrightness} setBgBrightness={(v) => { setBgBrightness(v); localStorage.setItem('backgroundBrightness', String(v)); }}
-          bgContrast={bgContrast} setBgContrast={(v) => { setBgContrast(v); localStorage.setItem('backgroundContrast', String(v)); }}
-          bgSaturation={bgSaturation} setBgSaturation={(v) => { setBgSaturation(v); localStorage.setItem('backgroundSaturation', String(v)); }}
-          bgSize={bgSize} setBgSize={(v) => { setBgSize(v); localStorage.setItem('backgroundSize', v); }}
-          bgPosition={bgPosition} setBgPosition={(v) => { setBgPosition(v); localStorage.setItem('backgroundPosition', v); }}
-          bgRotation={bgRotation} setBgRotation={(v) => { setBgRotation(v); localStorage.setItem('backgroundRotation', String(v)); }}
-        />;
+        return (
+          <Appearance
+            theme={theme}
+            setTheme={setTheme}
+            snowEnabled={snowfallEnabled}
+            setSnowEnabled={handleSetSnowfallEnabled}
+            rememberWindowSize={rememberWindowSize}
+            setRememberWindowSize={handleSetRememberWindowSize}
+            bgImage={bgImage}
+            setBgImage={(v) => {
+              setBgImage(v);
+              if (v) localStorage.setItem('backgroundImage', v);
+              else localStorage.removeItem('backgroundImage');
+            }}
+            bgOpacity={bgOpacity}
+            setBgOpacity={(v) => {
+              setBgOpacity(v);
+              localStorage.setItem('backgroundOpacity', String(v));
+            }}
+            bgBlur={bgBlur}
+            setBgBlur={(v) => {
+              setBgBlur(v);
+              localStorage.setItem('backgroundBlur', String(v));
+            }}
+            bgBrightness={bgBrightness}
+            setBgBrightness={(v) => {
+              setBgBrightness(v);
+              localStorage.setItem('backgroundBrightness', String(v));
+            }}
+            bgContrast={bgContrast}
+            setBgContrast={(v) => {
+              setBgContrast(v);
+              localStorage.setItem('backgroundContrast', String(v));
+            }}
+            bgSaturation={bgSaturation}
+            setBgSaturation={(v) => {
+              setBgSaturation(v);
+              localStorage.setItem('backgroundSaturation', String(v));
+            }}
+            bgSize={bgSize}
+            setBgSize={(v) => {
+              setBgSize(v);
+              localStorage.setItem('backgroundSize', v);
+            }}
+            bgPosition={bgPosition}
+            setBgPosition={(v) => {
+              setBgPosition(v);
+              localStorage.setItem('backgroundPosition', v);
+            }}
+            bgRotation={bgRotation}
+            setBgRotation={(v) => {
+              setBgRotation(v);
+              localStorage.setItem('backgroundRotation', String(v));
+            }}
+          />
+        );
       case 'About':
         return <About />;
       default:
@@ -277,50 +363,63 @@ function App() {
     <CssVarsProvider theme={customTheme}>
       <Snowfall enabled={snowfallEnabled} />
       {resolvedBgImage && (
-        <div 
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundImage: `url("${resolvedBgImage}")`,
-                backgroundSize: bgSize,
-                backgroundPosition: bgPosition,
-                backgroundRepeat: 'no-repeat',
-                transform: `rotate(${bgRotation}deg) scale(${bgRotation !== 0 ? 1.5 : 1})`,
-                opacity: bgOpacity,
-                filter: `blur(${bgBlur}px) brightness(${bgBrightness}%) contrast(${bgContrast}%) saturate(${bgSaturation}%)`,
-                zIndex: -1,
-                pointerEvents: 'none',
-                transition: 'all 0.3s ease'
-            }}
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: `url("${resolvedBgImage}")`,
+            backgroundSize: bgSize,
+            backgroundPosition: bgPosition,
+            backgroundRepeat: 'no-repeat',
+            transform: `rotate(${bgRotation}deg) scale(${bgRotation !== 0 ? 1.5 : 1})`,
+            opacity: bgOpacity,
+            filter: `blur(${bgBlur}px) brightness(${bgBrightness}%) contrast(${bgContrast}%) saturate(${bgSaturation}%)`,
+            zIndex: -1,
+            pointerEvents: 'none',
+            transition: 'all 0.3s ease',
+          }}
         />
       )}
       <Titlebar showTitle={false} />
       <Box className="main-container" sx={{ flexDirection: 'column' }}>
-        <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden', width: '100%' }}>
-            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-            <Box className="content-area" sx={{ flex: 1, overflowY: 'auto' }}>
-                {renderContent()}
-            </Box>
-        </Box>
-        <Box 
-            className="footer" 
-            sx={{ 
-                p: 2, 
-                borderTop: '1px solid var(--border-color)', 
-                display: 'flex', 
-                justifyContent: 'flex-end', 
-                gap: 1,
-                backgroundColor: 'var(--bg-content)',
-                backdropFilter: 'blur(10px)',
-                zIndex: 10
-            }}
+        <Box
+          sx={{ display: 'flex', flex: 1, overflow: 'hidden', width: '100%' }}
         >
-            <Button onClick={handleSave} disabled={!saveHandler} variant="outlined" color="neutral">Save</Button>
-            <Button onClick={handleSaveAndLaunch} variant="solid" color="primary">Save and Launch</Button>
-            <Button onClick={handleClose} variant="plain" color="danger">Close</Button>
+          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+          <Box className="content-area" sx={{ flex: 1, overflowY: 'auto' }}>
+            {renderContent()}
+          </Box>
+        </Box>
+        <Box
+          className="footer"
+          sx={{
+            p: 2,
+            borderTop: '1px solid var(--border-color)',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 1,
+            backgroundColor: 'var(--bg-content)',
+            backdropFilter: 'blur(10px)',
+            zIndex: 10,
+          }}
+        >
+          <Button
+            onClick={handleSave}
+            disabled={!saveHandler}
+            variant="outlined"
+            color="neutral"
+          >
+            Save
+          </Button>
+          <Button onClick={handleSaveAndLaunch} variant="solid" color="primary">
+            Save and Launch
+          </Button>
+          <Button onClick={handleClose} variant="plain" color="danger">
+            Close
+          </Button>
         </Box>
       </Box>
     </CssVarsProvider>

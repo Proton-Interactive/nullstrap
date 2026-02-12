@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-/// <reference types="vite/client" />
+
 import { Typography, Divider, Button, Stack, Alert, Select, Option, Box, List, ListItem, ListItemContent, Switch } from '@mui/joy';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
@@ -7,8 +7,7 @@ import { writeFile, mkdir, exists } from '@tauri-apps/plugin-fs';
 import { appLocalDataDir, join } from '@tauri-apps/api/path';
 import { type as getOsType } from '@tauri-apps/plugin-os';
 
-// @ts-ignore
-const SKYBOX_ASSETS = import.meta.glob('/src/assets/skyboxes/**/*.{tex,png,jpg}', {
+const SKYBOX_ASSETS = import.meta.glob('/src/assets/skyboxes/**/*. {tex,png,jpg}', {
     query: '?url',
     import: 'default',
     eager: true
@@ -19,8 +18,7 @@ export default function Mods() {
     const [status, setStatus] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [osType, setOsType] = useState<string>('windows');
-    
-    // sober settings
+
     const [soberSettings, setSoberSettings] = useState<Record<string, any>>({
         allow_gamepad_permission: false,
         close_on_leave: true,
